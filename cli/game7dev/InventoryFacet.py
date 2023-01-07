@@ -96,6 +96,12 @@ class InventoryFacet:
         contract_class = contract_from_build(self.contract_name)
         contract_class.publish_source(self.contract)
 
+    def admin_terminus_info(
+        self, block_number: Optional[Union[str, int]] = "latest"
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.adminTerminusInfo.call(block_identifier=block_number)
+
     def init(
         self,
         admin_terminus_address: ChecksumAddress,
@@ -241,6 +247,13 @@ def handle_verify_contract(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_admin_terminus_info(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.admin_terminus_info(block_number=args.block_number)
+    print(result)
+
+
 def handle_init(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
@@ -326,6 +339,10 @@ def generate_cli() -> argparse.ArgumentParser:
     verify_contract_parser = subcommands.add_parser("verify-contract")
     add_default_arguments(verify_contract_parser, False)
     verify_contract_parser.set_defaults(func=handle_verify_contract)
+
+    admin_terminus_info_parser = subcommands.add_parser("admin-terminus-info")
+    add_default_arguments(admin_terminus_info_parser, False)
+    admin_terminus_info_parser.set_defaults(func=handle_admin_terminus_info)
 
     init_parser = subcommands.add_parser("init")
     add_default_arguments(init_parser, True)

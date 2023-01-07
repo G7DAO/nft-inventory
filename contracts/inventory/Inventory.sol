@@ -71,4 +71,10 @@ contract InventoryFacet is
         istore.AdminTerminusAddress = adminTerminusAddress;
         istore.AdminTerminusPoolId = adminTerminusPoolId;
     }
+
+    function adminTerminusInfo() external view returns (address, uint256) {
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+        return (istore.AdminTerminusAddress, istore.AdminTerminusPoolId);
+    }
 }
