@@ -1,5 +1,6 @@
 import argparse
 
+from .core import generate_cli as core_generate_cli
 from .version import VERSION
 
 
@@ -14,6 +15,11 @@ def generate_cli() -> argparse.ArgumentParser:
         "-v", "--version", action="version", version=VERSION, help="Print version"
     )
     parser.set_defaults(func=lambda _: parser.print_help())
+
+    subparsers = parser.add_subparsers()
+
+    core_parser = core_generate_cli()
+    subparsers.add_parser("core", parents=[core_parser], add_help=False)
 
     return parser
 
