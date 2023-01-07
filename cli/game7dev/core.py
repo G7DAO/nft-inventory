@@ -4,19 +4,31 @@ import os
 import sys
 import time
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set
 
 from brownie import network
 
-from . import Diamond, DiamondCutFacet, DiamondLoupeFacet, OwnershipFacet, abi
+from . import (
+    Diamond,
+    DiamondCutFacet,
+    DiamondLoupeFacet,
+    InventoryFacet,
+    OwnershipFacet,
+    abi,
+)
 
 FACETS: Dict[str, Any] = {
     "DiamondCutFacet": DiamondCutFacet,
     "DiamondLoupeFacet": DiamondLoupeFacet,
     "OwnershipFacet": OwnershipFacet,
+    "InventoryFacet": InventoryFacet,
 }
 
-FACET_INIT_CALLDATA: Dict[str, str] = {}
+FACET_INIT_CALLDATA: Dict[str, Callable] = {
+    "InventoryFacet": lambda address, *args: InventoryFacet.InventoryFacet(
+        address
+    ).contract.init.encode_input(*args)
+}
 
 DIAMOND_FACET_PRECEDENCE: List[str] = [
     "DiamondCutFacet",
@@ -32,7 +44,7 @@ FACET_PRECEDENCE: List[str] = [
 
 
 class EngineFeatures(Enum):
-    INVENTORY = "Inventory"
+    INVENTORY = "InventoryFacet"
 
 
 def feature_from_facet_name(facet_name: str) -> Optional[EngineFeatures]:
@@ -42,7 +54,9 @@ def feature_from_facet_name(facet_name: str) -> Optional[EngineFeatures]:
         return None
 
 
-FEATURE_FACETS: Dict[EngineFeatures, List[str]] = {EngineFeatures.INVENTORY: []}
+FEATURE_FACETS: Dict[EngineFeatures, List[str]] = {
+    EngineFeatures.INVENTORY: ["InventoryFacet"]
+}
 
 FEATURE_IGNORES: Dict[EngineFeatures, List[str]] = {
     EngineFeatures.INVENTORY: {"methods": ["init"], "selectors": []}
@@ -103,9 +117,8 @@ def facet_cut(
         facet_abi = abis.get(facet, [])
         if facet == facet_name:
             # Add feature ignores to reserved_selectors then break out of facet iteration
-            facet_feature = feature_from_facet_name(facet_name)
-            if facet_feature is not None:
-                feature_ignores = FEATURE_IGNORES[facet_feature]
+            if feature is not None:
+                feature_ignores = FEATURE_IGNORES[feature]
                 for item in facet_abi:
                     if (
                         item["type"] == "function"
@@ -267,6 +280,53 @@ def diamond_gogogo(
     return result
 
 
+def inventory_gogogo(
+    admin_terminus_address: str,
+    admin_terminus_pool_id: int,
+    transaction_config: Dict[str, Any],
+    diamond_cut_address: Optional[str] = None,
+    diamond_address: Optional[str] = None,
+    diamond_loupe_address: Optional[str] = None,
+    ownership_address: Optional[str] = None,
+    inventory_facet_address: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Deploys an EIP2535 Diamond contract and an InventoryFacet and mounts the InventoryFacet onto the Diamond contract.
+
+    Returns the addresses and attachments.
+    """
+    deployment_info = diamond_gogogo(
+        owner_address=transaction_config["from"].address,
+        transaction_config=transaction_config,
+        diamond_cut_address=diamond_cut_address,
+        diamond_address=diamond_address,
+        diamond_loupe_address=diamond_loupe_address,
+        ownership_address=ownership_address,
+    )
+
+    if inventory_facet_address is None:
+        inventory_facet = InventoryFacet.InventoryFacet(None)
+        inventory_facet.deploy(transaction_config=transaction_config)
+    else:
+        inventory_facet = InventoryFacet.InventoryFacet(inventory_facet_address)
+
+    deployment_info["contracts"]["InventoryFacet"] = inventory_facet.address
+
+    facet_cut(
+        deployment_info["contracts"]["Diamond"],
+        "InventoryFacet",
+        inventory_facet.address,
+        "add",
+        transaction_config,
+        initializer_address=inventory_facet.address,
+        feature=EngineFeatures.INVENTORY,
+        initializer_args=[admin_terminus_address, admin_terminus_pool_id],
+    )
+    deployment_info["attached"].append("InventoryFacet")
+
+    return deployment_info
+
+
 def handle_facet_cut(args: argparse.Namespace) -> None:
     network.connect(args.network)
     diamond_address = args.address
@@ -286,6 +346,25 @@ def handle_facet_cut(args: argparse.Namespace) -> None:
         methods=args.methods,
         selectors=args.selectors,
     )
+
+
+def handle_inventory_gogogo(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    transaction_config = InventoryFacet.get_transaction_config(args)
+    result = inventory_gogogo(
+        admin_terminus_address=args.admin_terminus_address,
+        admin_terminus_pool_id=args.admin_terminus_pool_id,
+        transaction_config=transaction_config,
+        diamond_cut_address=args.diamond_cut_address,
+        diamond_address=args.diamond_address,
+        diamond_loupe_address=args.diamond_loupe_address,
+        ownership_address=args.ownership_address,
+        inventory_facet_address=args.inventory_facet_address,
+    )
+    if args.outfile is not None:
+        with args.outfile:
+            json.dump(result, args.outfile)
+    json.dump(result, sys.stdout, indent=4)
 
 
 def generate_cli():
@@ -345,5 +424,60 @@ def generate_cli():
         help="Selectors to add (if set, --ignore-methods and --ignore-selectors are not used)",
     )
     facet_cut_parser.set_defaults(func=handle_facet_cut)
+
+    inventory_gogogo_parser = subcommands.add_parser(
+        "inventory-gogogo",
+        description="Deploy Inventory diamond contract",
+    )
+    Diamond.add_default_arguments(inventory_gogogo_parser, transact=True)
+    inventory_gogogo_parser.add_argument(
+        "--admin-terminus-address",
+        required=True,
+        help="Address of Terminus contract defining access control for this GardenOfForkingPaths contract",
+    )
+    inventory_gogogo_parser.add_argument(
+        "--admin-terminus-pool-id",
+        required=True,
+        type=int,
+        help="Pool ID of Terminus pool for administrators of this GardenOfForkingPaths contract",
+    )
+    inventory_gogogo_parser.add_argument(
+        "--diamond-cut-address",
+        required=False,
+        default=None,
+        help="Address to deployed DiamondCutFacet. If provided, this command skips deployment of a new DiamondCutFacet.",
+    )
+    inventory_gogogo_parser.add_argument(
+        "--diamond-address",
+        required=False,
+        default=None,
+        help="Address to deployed Diamond contract. If provided, this command skips deployment of a new Diamond contract and simply mounts the required facets onto the existing Diamond contract. Assumes that there is no collision of selectors.",
+    )
+    inventory_gogogo_parser.add_argument(
+        "--diamond-loupe-address",
+        required=False,
+        default=None,
+        help="Address to deployed DiamondLoupeFacet. If provided, this command skips deployment of a new DiamondLoupeFacet. It mounts the existing DiamondLoupeFacet onto the Diamond.",
+    )
+    inventory_gogogo_parser.add_argument(
+        "--ownership-address",
+        required=False,
+        default=None,
+        help="Address to deployed OwnershipFacet. If provided, this command skips deployment of a new OwnershipFacet. It mounts the existing OwnershipFacet onto the Diamond.",
+    )
+    inventory_gogogo_parser.add_argument(
+        "--inventory-facet-address",
+        required=False,
+        default=None,
+        help="Address to deployed InventoryFacet. If provided, this command skips deployment of a new InventoryFacet. It mounts the existing InventoryFacet onto the Diamond.",
+    )
+    inventory_gogogo_parser.add_argument(
+        "-o",
+        "--outfile",
+        type=argparse.FileType("w"),
+        default=None,
+        help="(Optional) file to write deployed addresses to",
+    )
+    inventory_gogogo_parser.set_defaults(func=handle_inventory_gogogo)
 
     return parser
