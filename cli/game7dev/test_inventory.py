@@ -54,7 +54,7 @@ class InventoryTestCase(unittest.TestCase):
         )
 
 
-class TestContractSetup(InventoryTestCase):
+class InventorySetupTests(InventoryTestCase):
     def test_admin_terminus_info(self):
         terminus_info = self.inventory.admin_terminus_info()
         self.assertEqual(terminus_info[0], self.terminus.address)
