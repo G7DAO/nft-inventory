@@ -1,21 +1,14 @@
 import argparse
-from enum import Enum
 import json
 import os
 import sys
 import time
-from typing import Any, Dict, Optional, List, Set
+from enum import Enum
+from typing import Any, Dict, List, Optional, Set
 
 from brownie import network
 
-
-from . import (
-    abi,
-    Diamond,
-    DiamondCutFacet,
-    DiamondLoupeFacet,
-    OwnershipFacet,
-)
+from . import Diamond, DiamondCutFacet, DiamondLoupeFacet, OwnershipFacet, abi
 
 FACETS: Dict[str, Any] = {
     "DiamondCutFacet": DiamondCutFacet,
