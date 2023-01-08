@@ -58,8 +58,8 @@ contract InventoryFacet is
     }
 
     event AdministratorDesignated(
-        address indexed adminTokenAddress,
-        uint256 indexed adminTokenPoolId
+        address indexed adminTerminusAddress,
+        uint256 indexed adminTerminusPoolId
     );
 
     function init(address adminTerminusAddress, uint256 adminTerminusPoolId)
@@ -70,6 +70,8 @@ contract InventoryFacet is
             .inventoryStorage();
         istore.AdminTerminusAddress = adminTerminusAddress;
         istore.AdminTerminusPoolId = adminTerminusPoolId;
+
+        emit AdministratorDesignated(adminTerminusAddress, adminTerminusPoolId);
     }
 
     function adminTerminusInfo() external view returns (address, uint256) {

@@ -2,9 +2,10 @@ import unittest
 
 from brownie import accounts, network, web3 as web3_client, ZERO_ADDRESS
 from brownie.exceptions import VirtualMachineError
+from brownie.network import chain
 from moonworm.watch import _fetch_events_chunk
 
-from . import InventoryFacet, MockERC20, MockTerminus
+from . import InventoryFacet, MockERC20, MockTerminus, inventory_events
 from .core import inventory_gogogo
 
 MAX_UINT = 2**256 - 1
@@ -46,9 +47,11 @@ class InventoryTestCase(unittest.TestCase):
             cls.admin.address, cls.admin_terminus_pool_id, 1, "", cls.owner_tx_config
         )
 
+        cls.predeployment_block = len(chain)
         cls.deployed_contracts = inventory_gogogo(
             cls.terminus.address, cls.admin_terminus_pool_id, cls.owner_tx_config
         )
+        cls.postdeployment_block = len(chain)
         cls.inventory = InventoryFacet.InventoryFacet(
             cls.deployed_contracts["contracts"]["Diamond"]
         )
@@ -59,3 +62,21 @@ class InventorySetupTests(InventoryTestCase):
         terminus_info = self.inventory.admin_terminus_info()
         self.assertEqual(terminus_info[0], self.terminus.address)
         self.assertEqual(terminus_info[1], self.admin_terminus_pool_id)
+
+    def test_administrator_designated_event(self):
+        administrator_designated_events = _fetch_events_chunk(
+            web3_client,
+            inventory_events.ADMINISTRATOR_DESIGNATED_ABI,
+            self.predeployment_block,
+            self.postdeployment_block,
+        )
+        self.assertEqual(len(administrator_designated_events), 1)
+
+        self.assertEqual(
+            administrator_designated_events[0]["args"]["adminTerminusAddress"],
+            self.terminus.address,
+        )
+        self.assertEqual(
+            administrator_designated_events[0]["args"]["adminTerminusPoolId"],
+            self.admin_terminus_pool_id,
+        )
