@@ -120,9 +120,17 @@ class InventoryFacet:
         self.assert_contract_is_instantiated()
         return self.contract.adminTerminusInfo.call(block_identifier=block_number)
 
-    def create_slot(self, transaction_config) -> Any:
+    def create_slot(self, configuration: int, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
-        return self.contract.createSlot(transaction_config)
+        return self.contract.createSlot(configuration, transaction_config)
+
+    def get_slot_configuration(
+        self, slot: int, block_number: Optional[Union[str, int]] = "latest"
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.getSlotConfiguration.call(
+            slot, block_identifier=block_number
+        )
 
     def init(
         self,
@@ -313,10 +321,21 @@ def handle_create_slot(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
     transaction_config = get_transaction_config(args)
-    result = contract.create_slot(transaction_config=transaction_config)
+    result = contract.create_slot(
+        configuration=args.configuration, transaction_config=transaction_config
+    )
     print(result)
     if args.verbose:
         print(result.info())
+
+
+def handle_get_slot_configuration(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.get_slot_configuration(
+        slot=args.slot, block_number=args.block_number
+    )
+    print(result)
 
 
 def handle_init(args: argparse.Namespace) -> None:
@@ -438,7 +457,17 @@ def generate_cli() -> argparse.ArgumentParser:
 
     create_slot_parser = subcommands.add_parser("create-slot")
     add_default_arguments(create_slot_parser, True)
+    create_slot_parser.add_argument(
+        "--configuration", required=True, help="Type: uint256", type=int
+    )
     create_slot_parser.set_defaults(func=handle_create_slot)
+
+    get_slot_configuration_parser = subcommands.add_parser("get-slot-configuration")
+    add_default_arguments(get_slot_configuration_parser, False)
+    get_slot_configuration_parser.add_argument(
+        "--slot", required=True, help="Type: uint256", type=int
+    )
+    get_slot_configuration_parser.set_defaults(func=handle_get_slot_configuration)
 
     init_parser = subcommands.add_parser("init")
     add_default_arguments(init_parser, True)

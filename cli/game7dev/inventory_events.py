@@ -47,6 +47,12 @@ INVENTORY_SLOT_CREATED_ABI = {
             "name": "slot",
             "type": "uint256",
         },
+        {
+            "indexed": False,
+            "internalType": "uint256",
+            "name": "slotConfiguration",
+            "type": "uint256",
+        },
     ],
     "name": "InventorySlotCreated",
     "type": "event",

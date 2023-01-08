@@ -29,6 +29,19 @@ library LibInventory {
         uint256 AdminTerminusPoolId;
         address SubjectERC721Address;
         uint256 NumSlots;
+        // Slot => Slot configuration bitmap
+        // Currently, there are only two admissible configurations:
+        // - 3 means that items can be unequipped from the slot
+        // - 1 means that items cannot be unequipped from the slot
+        // The intention is for these configurations to be a bitmap over all possible settings that can
+        // be configured on a slot.
+        // The first bit (2^0) is always active for created slots.
+        // The 2 bit is active for slots from which items cannot be unequipped.
+        mapping(uint256 => uint256) SlotConfigurations;
+        // Slot => item address => item type => item pool ID => maximum equippable
+        // For ERC20 and ERC721 tokens, item pool ID is assumed to be 0. No data will be stored under positive
+        // item pool IDs.
+        mapping(uint256 => mapping(uint256 => mapping(uint256 => mapping(uint256 => uint256)))) SlotEligibleItems;
     }
 
     function inventoryStorage()
@@ -40,6 +53,22 @@ library LibInventory {
         assembly {
             istore.slot := position
         }
+    }
+
+    function isValidSlotConfiguration(uint256 configuration)
+        internal
+        pure
+        returns (bool)
+    {
+        return configuration & 1 == 1 && configuration <= 3;
+    }
+
+    function isSlotConfigured(uint256 slot) internal view returns (bool) {
+        return inventoryStorage().SlotConfigurations[slot] & 1 == 1;
+    }
+
+    function isSlotUnequippable(uint256 slot) internal view returns (bool) {
+        return (inventoryStorage().SlotConfigurations[slot] >> 1) & 1 == 1;
     }
 }
 
@@ -54,7 +83,8 @@ https://docs.google.com/document/d/1Oa9I9b7t46_ngYp-Pady5XKEDW8M2NE9rI0GBRACZBI/
 
 Admin flow:
 - [x] Create inventory slots
-- [ ] Mark tokens as equippable in inventory slots
+- [x] Specify whether inventory slots are equippable or not on slot creation
+- [ ] Define tokens as equippable in inventory slots
 
 Player flow:
 - [ ] Equip ERC721 tokens in eligible inventory slots
@@ -85,13 +115,6 @@ contract InventoryFacet is
     uint256 public ERC721_ITEM_TYPE = 2;
     uint256 public ERC1155_ITEM_TYPE = 3;
 
-    struct EquippableItem {
-        uint256 ItemType;
-        uint256 ContractAddress;
-        uint256 PoolId;
-        uint256 MaxAmount;
-    }
-
     event AdministratorDesignated(
         address indexed adminTerminusAddress,
         uint256 indexed adminTerminusPoolId
@@ -99,7 +122,11 @@ contract InventoryFacet is
 
     event SubjectDesignated(address indexed subjectAddress);
 
-    event InventorySlotCreated(address indexed creator, uint256 slot);
+    event InventorySlotCreated(
+        address indexed creator,
+        uint256 slot,
+        uint256 slotConfiguration
+    );
 
     /**
     An Inventory must be initialized with:
@@ -133,17 +160,34 @@ contract InventoryFacet is
         return LibInventory.inventoryStorage().SubjectERC721Address;
     }
 
-    function createSlot() external onlyAdmin returns (uint256) {
+    function createSlot(uint256 configuration)
+        external
+        onlyAdmin
+        returns (uint256)
+    {
+        require(
+            LibInventory.isValidSlotConfiguration(configuration),
+            "InventoryFacet.createSlot: Invalid slot configuration"
+        );
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
         uint256 newSlot = istore.NumSlots++;
+        istore.SlotConfigurations[newSlot] = configuration;
 
-        emit InventorySlotCreated(msg.sender, newSlot);
+        emit InventorySlotCreated(msg.sender, newSlot, configuration);
         return newSlot;
     }
 
     function numSlots() external view returns (uint256) {
         return LibInventory.inventoryStorage().NumSlots;
+    }
+
+    function getSlotConfiguration(uint256 slot)
+        external
+        view
+        returns (uint256)
+    {
+        return LibInventory.inventoryStorage().SlotConfigurations[slot];
     }
 }
