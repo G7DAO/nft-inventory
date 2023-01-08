@@ -24,6 +24,10 @@ library LibInventory {
     bytes32 constant STORAGE_POSITION =
         keccak256("g7dao.eth.storage.Inventory");
 
+    uint256 constant ERC20_ITEM_TYPE = 20;
+    uint256 constant ERC721_ITEM_TYPE = 721;
+    uint256 constant ERC1155_ITEM_TYPE = 1155;
+
     struct InventoryStorage {
         address AdminTerminusAddress;
         uint256 AdminTerminusPoolId;
@@ -86,7 +90,7 @@ https://docs.google.com/document/d/1Oa9I9b7t46_ngYp-Pady5XKEDW8M2NE9rI0GBRACZBI/
 Admin flow:
 - [x] Create inventory slots
 - [x] Specify whether inventory slots are equippable or not on slot creation
-- [ ] Define tokens as equippable in inventory slots
+- [x] Define tokens as equippable in inventory slots
 
 Player flow:
 - [ ] Equip ERC721 tokens in eligible inventory slots
@@ -112,10 +116,6 @@ contract InventoryFacet is
         );
         _;
     }
-
-    uint256 public ERC20_ITEM_TYPE = 1;
-    uint256 public ERC721_ITEM_TYPE = 2;
-    uint256 public ERC1155_ITEM_TYPE = 3;
 
     event AdministratorDesignated(
         address indexed adminTerminusAddress,
@@ -212,16 +212,25 @@ contract InventoryFacet is
             .inventoryStorage();
 
         require(
-            itemType == ERC20_ITEM_TYPE ||
-                itemType == ERC721_ITEM_TYPE ||
-                itemType == ERC1155_ITEM_TYPE,
+            itemType == LibInventory.ERC20_ITEM_TYPE ||
+                itemType == LibInventory.ERC721_ITEM_TYPE ||
+                itemType == LibInventory.ERC1155_ITEM_TYPE,
             "InventoryFacet.markItemAsEquippableInSlot: Invalid item type"
         );
         require(
-            itemType == ERC1155_ITEM_TYPE || itemPoolId == 0,
+            itemType == LibInventory.ERC1155_ITEM_TYPE || itemPoolId == 0,
             "InventoryFacet.markItemAsEquippableInSlot: Pool ID can only be non-zero for items from ERC1155 contracts"
         );
+        require(
+            itemType != LibInventory.ERC721_ITEM_TYPE || maxAmount <= 1,
+            "InventoryFacet.markItemAsEquippableInSlot: maxAmount should be at most 1 for items from ERC721 contracts"
+        );
 
+        // NOTE: We do not perform any check on the previously registered maxAmount for the item.
+        // This gives administrators some flexibility in marking items as no longer eligible for slots.
+        // But any player who has already equipped items in a slot before a change in maxAmount will
+        // not be subject to the new limitation. This is something administrators will have to factor
+        // into their game design.
         istore.SlotEligibleItems[slot][itemType][itemAddress][
             itemPoolId
         ] = maxAmount;

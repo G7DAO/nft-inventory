@@ -196,12 +196,38 @@ class AdminFlowTests(InventoryTestCase):
 
         self.assertEqual(num_slots_1, num_slots_0)
 
+    def test_admin_cannot_mark_contracts_with_invalid_type_as_eligible_for_slots(
+        self,
+    ):
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        invalid_type = 0
+
+        with self.assertRaises(VirtualMachineError):
+            self.inventory.mark_item_as_equippable_in_slot(
+                slot,
+                invalid_type,
+                self.payment_token.address,
+                0,
+                MAX_UINT,
+                {"from": self.admin},
+            )
+
+        self.assertEqual(
+            self.inventory.max_amount_of_item_in_slot(
+                slot, invalid_type, self.payment_token.address, 0
+            ),
+            0,
+        )
+
     def test_admin_can_mark_erc20_tokens_as_eligible_for_slots(self):
         slot_configuration = 3
         self.inventory.create_slot(slot_configuration, {"from": self.admin})
         slot = self.inventory.num_slots()
 
-        erc20_type = self.inventory.erc20_item_type()
+        erc20_type = 20
 
         tx_receipt = self.inventory.mark_item_as_equippable_in_slot(
             slot,
@@ -253,7 +279,7 @@ class AdminFlowTests(InventoryTestCase):
         self.inventory.create_slot(slot_configuration, {"from": self.admin})
         slot = self.inventory.num_slots()
 
-        erc20_type = self.inventory.erc20_item_type()
+        erc20_type = 20
 
         with self.assertRaises(VirtualMachineError):
             self.inventory.mark_item_as_equippable_in_slot(
@@ -271,3 +297,228 @@ class AdminFlowTests(InventoryTestCase):
             ),
             0,
         )
+
+    def test_admin_cannot_mark_erc20_tokens_as_eligible_for_slots_if_pool_id_is_nonzero(
+        self,
+    ):
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        erc20_type = 20
+
+        with self.assertRaises(VirtualMachineError):
+            self.inventory.mark_item_as_equippable_in_slot(
+                slot,
+                erc20_type,
+                self.payment_token.address,
+                1,
+                MAX_UINT,
+                {"from": self.admin},
+            )
+
+        self.assertEqual(
+            self.inventory.max_amount_of_item_in_slot(
+                slot, erc20_type, self.payment_token.address, 1
+            ),
+            0,
+        )
+
+    def test_admin_can_mark_erc721_tokens_as_eligible_for_slots(self):
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        erc721_type = 721
+
+        tx_receipt = self.inventory.mark_item_as_equippable_in_slot(
+            slot,
+            erc721_type,
+            self.nft.address,
+            0,
+            1,
+            {"from": self.admin},
+        )
+
+        self.assertEqual(
+            self.inventory.max_amount_of_item_in_slot(
+                slot, erc721_type, self.nft.address, 0
+            ),
+            1,
+        )
+
+        item_marked_as_equippable_in_slot_events = _fetch_events_chunk(
+            web3_client,
+            inventory_events.ITEM_MARKED_AS_EQUIPPABLE_IN_SLOT_ABI,
+            tx_receipt.block_number,
+            tx_receipt.block_number,
+        )
+
+        self.assertEqual(len(item_marked_as_equippable_in_slot_events), 1)
+        self.assertEqual(
+            item_marked_as_equippable_in_slot_events[0]["args"]["slot"],
+            slot,
+        )
+        self.assertEqual(
+            item_marked_as_equippable_in_slot_events[0]["args"]["itemType"],
+            erc721_type,
+        )
+        self.assertEqual(
+            item_marked_as_equippable_in_slot_events[0]["args"]["itemAddress"],
+            self.nft.address,
+        )
+        self.assertEqual(
+            item_marked_as_equippable_in_slot_events[0]["args"]["itemPoolId"],
+            0,
+        )
+        self.assertEqual(
+            item_marked_as_equippable_in_slot_events[0]["args"]["maxAmount"],
+            1,
+        )
+
+    def test_nonadmin_cannot_mark_erc721_tokens_as_eligible_for_slots(self):
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        erc721_type = 721
+
+        with self.assertRaises(VirtualMachineError):
+            self.inventory.mark_item_as_equippable_in_slot(
+                slot,
+                erc721_type,
+                self.payment_token.address,
+                0,
+                1,
+                {"from": self.player},
+            )
+
+        self.assertEqual(
+            self.inventory.max_amount_of_item_in_slot(
+                slot, erc721_type, self.payment_token.address, 0
+            ),
+            0,
+        )
+
+    def test_admin_cannot_mark_erc721_tokens_as_eligible_for_slots_if_pool_id_is_nonzero(
+        self,
+    ):
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        erc721_type = 721
+
+        with self.assertRaises(VirtualMachineError):
+            self.inventory.mark_item_as_equippable_in_slot(
+                slot,
+                erc721_type,
+                self.payment_token.address,
+                1,
+                1,
+                {"from": self.admin},
+            )
+
+        self.assertEqual(
+            self.inventory.max_amount_of_item_in_slot(
+                slot, erc721_type, self.payment_token.address, 1
+            ),
+            0,
+        )
+
+    def test_admin_cannot_mark_erc721_tokens_as_eligible_for_slots_with_max_amount_greater_than_1(
+        self,
+    ):
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        erc721_type = 721
+
+        with self.assertRaises(VirtualMachineError):
+            self.inventory.mark_item_as_equippable_in_slot(
+                slot,
+                erc721_type,
+                self.payment_token.address,
+                0,
+                2,
+                {"from": self.admin},
+            )
+
+        self.assertEqual(
+            self.inventory.max_amount_of_item_in_slot(
+                slot, erc721_type, self.payment_token.address, 0
+            ),
+            0,
+        )
+
+    def test_admin_can_mark_erc721_tokens_as_eligible_for_slots_with_max_amount_1_then_0(
+        self,
+    ):
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        erc721_type = 721
+
+        tx_receipt_0 = self.inventory.mark_item_as_equippable_in_slot(
+            slot,
+            erc721_type,
+            self.nft.address,
+            0,
+            1,
+            {"from": self.admin},
+        )
+
+        self.assertEqual(
+            self.inventory.max_amount_of_item_in_slot(
+                slot, erc721_type, self.nft.address, 0
+            ),
+            1,
+        )
+
+        tx_receipt_1 = self.inventory.mark_item_as_equippable_in_slot(
+            slot,
+            erc721_type,
+            self.nft.address,
+            0,
+            0,
+            {"from": self.admin},
+        )
+
+        self.assertEqual(
+            self.inventory.max_amount_of_item_in_slot(
+                slot, erc721_type, self.nft.address, 0
+            ),
+            0,
+        )
+
+        item_marked_as_equippable_in_slot_events = _fetch_events_chunk(
+            web3_client,
+            inventory_events.ITEM_MARKED_AS_EQUIPPABLE_IN_SLOT_ABI,
+            tx_receipt_0.block_number,
+            tx_receipt_1.block_number,
+        )
+
+        self.assertEqual(len(item_marked_as_equippable_in_slot_events), 2)
+        for i, event in enumerate(item_marked_as_equippable_in_slot_events):
+            self.assertEqual(
+                event["args"]["slot"],
+                slot,
+            )
+            self.assertEqual(
+                event["args"]["itemType"],
+                erc721_type,
+            )
+            self.assertEqual(
+                event["args"]["itemAddress"],
+                self.nft.address,
+            )
+            self.assertEqual(
+                event["args"]["itemPoolId"],
+                0,
+            )
+            self.assertEqual(
+                event["args"]["maxAmount"],
+                1 - i,
+            )

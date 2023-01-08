@@ -96,24 +96,6 @@ class InventoryFacet:
         contract_class = contract_from_build(self.contract_name)
         contract_class.publish_source(self.contract)
 
-    def erc1155_item_type(
-        self, block_number: Optional[Union[str, int]] = "latest"
-    ) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.ERC1155_ITEM_TYPE.call(block_identifier=block_number)
-
-    def erc20_item_type(
-        self, block_number: Optional[Union[str, int]] = "latest"
-    ) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.ERC20_ITEM_TYPE.call(block_identifier=block_number)
-
-    def erc721_item_type(
-        self, block_number: Optional[Union[str, int]] = "latest"
-    ) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.ERC721_ITEM_TYPE.call(block_identifier=block_number)
-
     def admin_terminus_info(
         self, block_number: Optional[Union[str, int]] = "latest"
     ) -> Any:
@@ -316,27 +298,6 @@ def handle_verify_contract(args: argparse.Namespace) -> None:
     print(result)
 
 
-def handle_erc1155_item_type(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = InventoryFacet(args.address)
-    result = contract.erc1155_item_type(block_number=args.block_number)
-    print(result)
-
-
-def handle_erc20_item_type(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = InventoryFacet(args.address)
-    result = contract.erc20_item_type(block_number=args.block_number)
-    print(result)
-
-
-def handle_erc721_item_type(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = InventoryFacet(args.address)
-    result = contract.erc721_item_type(block_number=args.block_number)
-    print(result)
-
-
 def handle_admin_terminus_info(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
@@ -495,18 +456,6 @@ def generate_cli() -> argparse.ArgumentParser:
     verify_contract_parser = subcommands.add_parser("verify-contract")
     add_default_arguments(verify_contract_parser, False)
     verify_contract_parser.set_defaults(func=handle_verify_contract)
-
-    erc1155_item_type_parser = subcommands.add_parser("erc1155-item-type")
-    add_default_arguments(erc1155_item_type_parser, False)
-    erc1155_item_type_parser.set_defaults(func=handle_erc1155_item_type)
-
-    erc20_item_type_parser = subcommands.add_parser("erc20-item-type")
-    add_default_arguments(erc20_item_type_parser, False)
-    erc20_item_type_parser.set_defaults(func=handle_erc20_item_type)
-
-    erc721_item_type_parser = subcommands.add_parser("erc721-item-type")
-    add_default_arguments(erc721_item_type_parser, False)
-    erc721_item_type_parser.set_defaults(func=handle_erc721_item_type)
 
     admin_terminus_info_parser = subcommands.add_parser("admin-terminus-info")
     add_default_arguments(admin_terminus_info_parser, False)
