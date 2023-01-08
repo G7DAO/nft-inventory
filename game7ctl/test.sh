@@ -8,6 +8,8 @@ set -e
 
 GAS_PROFILE=${GAS_PROFILE:-y}
 
+SCRIPT_DIR="$(dirname $(realpath $0))"
+
 usage() {
     echo "Usage: $0" [TEST_SPEC ...]
     echo
@@ -25,6 +27,8 @@ then
 fi
 
 TEST_COMMAND=${@:-discover}
+
+cd $SCRIPT_DIR
 
 cd ..
 brownie compile
