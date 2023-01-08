@@ -90,3 +90,47 @@ ITEM_MARKED_AS_EQUIPPABLE_IN_SLOT_ABI = {
     "name": "ItemMarkedAsEquippableInSlot",
     "type": "event",
 }
+
+ITEM_EQUIPPED_ABI = {
+    "anonymous": False,
+    "inputs": [
+        {
+            "indexed": True,
+            "internalType": "uint256",
+            "name": "subjectTokenId",
+            "type": "uint256",
+        },
+        {
+            "indexed": True,
+            "internalType": "uint256",
+            "name": "itemType",
+            "type": "uint256",
+        },
+        {
+            "indexed": True,
+            "internalType": "address",
+            "name": "itemAddress",
+            "type": "address",
+        },
+        {
+            "indexed": False,
+            "internalType": "uint256",
+            "name": "itemTokenId",
+            "type": "uint256",
+        },
+        {
+            "indexed": False,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256",
+        },
+        {
+            "indexed": False,
+            "internalType": "address",
+            "name": "equippedBy",
+            "type": "address",
+        },
+    ],
+    "name": "ItemEquipped",
+    "type": "event",
+}

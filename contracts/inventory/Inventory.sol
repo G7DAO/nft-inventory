@@ -167,6 +167,15 @@ contract InventoryFacet is
         uint256 maxAmount
     );
 
+    event ItemEquipped(
+        uint256 indexed subjectTokenId,
+        uint256 indexed itemType,
+        address indexed itemAddress,
+        uint256 itemTokenId,
+        uint256 amount,
+        address equippedBy
+    );
+
     /**
     An Inventory must be initialized with:
     1. adminTerminusAddress: The address for the Terminus contract which hosts the Administrator badge.
@@ -292,7 +301,7 @@ contract InventoryFacet is
         address itemAddress,
         uint256 itemTokenId,
         uint256 amount
-    ) external {
+    ) external diamondNonReentrant {
         require(
             itemType == LibInventory.ERC20_ITEM_TYPE ||
                 itemType == LibInventory.ERC721_ITEM_TYPE ||
@@ -363,7 +372,16 @@ contract InventoryFacet is
                 erc20TransferSuccess,
                 "InventoryFacet.equip: Error equipping ERC20 item - transfer was unsuccessful"
             );
-        }
+        } else if (itemType == LibInventory.ERC721_ITEM_TYPE) {}
+
+        emit ItemEquipped(
+            subjectTokenId,
+            itemType,
+            itemAddress,
+            itemTokenId,
+            amount,
+            msg.sender
+        );
 
         istore.EquippedItems[istore.SubjectERC721Address][subjectTokenId][
                 slot

@@ -625,7 +625,7 @@ class TestPlayerFlow(InventoryTestCase):
             slot, 20, self.payment_token.address, 0, 10, {"from": self.admin}
         )
 
-        self.inventory.equip(
+        tx_receipt = self.inventory.equip(
             subject_token_id,
             slot,
             20,
@@ -637,6 +637,38 @@ class TestPlayerFlow(InventoryTestCase):
 
         equipped_item = self.inventory.equipped(subject_token_id, slot)
         self.assertEqual(equipped_item, (20, self.payment_token.address, 0, 2))
+
+        item_equipped_events = _fetch_events_chunk(
+            web3_client,
+            inventory_events.ITEM_EQUIPPED_ABI,
+            from_block=tx_receipt.block_number,
+            to_block=tx_receipt.block_number,
+        )
+        self.assertEqual(len(item_equipped_events), 1)
+
+        self.assertEqual(
+            item_equipped_events[0]["args"]["subjectTokenId"], subject_token_id
+        )
+        self.assertEqual(
+            item_equipped_events[0]["args"]["itemType"],
+            20,
+        )
+        self.assertEqual(
+            item_equipped_events[0]["args"]["itemAddress"],
+            self.payment_token.address,
+        )
+        self.assertEqual(
+            item_equipped_events[0]["args"]["itemTokenId"],
+            0,
+        )
+        self.assertEqual(
+            item_equipped_events[0]["args"]["amount"],
+            2,
+        )
+        self.assertEqual(
+            item_equipped_events[0]["args"]["equippedBy"],
+            self.player.address,
+        )
 
     def test_player_cannot_equip_too_many_erc20_items_onto_their_subject_tokens(self):
         # Mint tokens to player and set approvals
