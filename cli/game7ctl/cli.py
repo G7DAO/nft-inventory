@@ -1,6 +1,7 @@
 import argparse
 
 from .core import generate_cli as core_generate_cli
+from .InventoryFacet import generate_cli as inventory_generate_cli
 from .version import VERSION
 
 
@@ -20,6 +21,9 @@ def generate_cli() -> argparse.ArgumentParser:
 
     core_parser = core_generate_cli()
     subparsers.add_parser("core", parents=[core_parser], add_help=False)
+
+    inventory_parser = inventory_generate_cli()
+    subparsers.add_parser("inventory", parents=[inventory_parser], add_help=False)
 
     return parser
 
