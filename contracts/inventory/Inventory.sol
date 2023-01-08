@@ -38,10 +38,12 @@ library LibInventory {
         // The first bit (2^0) is always active for created slots.
         // The 2 bit is active for slots from which items cannot be unequipped.
         mapping(uint256 => uint256) SlotConfigurations;
-        // Slot => item address => item type => item pool ID => maximum equippable
+        // Slot => item type => item address => item pool ID => maximum equippable
         // For ERC20 and ERC721 tokens, item pool ID is assumed to be 0. No data will be stored under positive
         // item pool IDs.
-        mapping(uint256 => mapping(uint256 => mapping(uint256 => mapping(uint256 => uint256)))) SlotEligibleItems;
+        // Note that it is possible for the same contract to implement multiple of these ERCs (e.g. ERC20 and ERC721),
+        // so this data structure actually makes sense.
+        mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) SlotEligibleItems;
     }
 
     function inventoryStorage()
@@ -128,6 +130,14 @@ contract InventoryFacet is
         uint256 slotConfiguration
     );
 
+    event ItemMarkedAsEquippableInSlot(
+        uint256 indexed slot,
+        uint256 indexed itemType,
+        address indexed itemAddress,
+        uint256 itemPoolId,
+        uint256 maxAmount
+    );
+
     /**
     An Inventory must be initialized with:
     1. adminTerminusAddress: The address for the Terminus contract which hosts the Administrator badge.
@@ -189,5 +199,51 @@ contract InventoryFacet is
         returns (uint256)
     {
         return LibInventory.inventoryStorage().SlotConfigurations[slot];
+    }
+
+    function markItemAsEquippableInSlot(
+        uint256 slot,
+        uint256 itemType,
+        address itemAddress,
+        uint256 itemPoolId,
+        uint256 maxAmount
+    ) external onlyAdmin {
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        require(
+            itemType == ERC20_ITEM_TYPE ||
+                itemType == ERC721_ITEM_TYPE ||
+                itemType == ERC1155_ITEM_TYPE,
+            "InventoryFacet.markItemAsEquippableInSlot: Invalid item type"
+        );
+        require(
+            itemType == ERC1155_ITEM_TYPE || itemPoolId == 0,
+            "InventoryFacet.markItemAsEquippableInSlot: Pool ID can only be non-zero for items from ERC1155 contracts"
+        );
+
+        istore.SlotEligibleItems[slot][itemType][itemAddress][
+            itemPoolId
+        ] = maxAmount;
+
+        emit ItemMarkedAsEquippableInSlot(
+            slot,
+            itemType,
+            itemAddress,
+            itemPoolId,
+            maxAmount
+        );
+    }
+
+    function maxAmountOfItemInSlot(
+        uint256 slot,
+        uint256 itemType,
+        address itemAddress,
+        uint256 itemPoolId
+    ) external view returns (uint256) {
+        return
+            LibInventory.inventoryStorage().SlotEligibleItems[slot][itemType][
+                itemAddress
+            ][itemPoolId];
     }
 }

@@ -147,6 +147,33 @@ class InventoryFacet:
             transaction_config,
         )
 
+    def mark_item_as_equippable_in_slot(
+        self,
+        slot: int,
+        item_type: int,
+        item_address: ChecksumAddress,
+        item_pool_id: int,
+        max_amount: int,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.markItemAsEquippableInSlot(
+            slot, item_type, item_address, item_pool_id, max_amount, transaction_config
+        )
+
+    def max_amount_of_item_in_slot(
+        self,
+        slot: int,
+        item_type: int,
+        item_address: ChecksumAddress,
+        item_pool_id: int,
+        block_number: Optional[Union[str, int]] = "latest",
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.maxAmountOfItemInSlot.call(
+            slot, item_type, item_address, item_pool_id, block_identifier=block_number
+        )
+
     def num_slots(self, block_number: Optional[Union[str, int]] = "latest") -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.numSlots.call(block_identifier=block_number)
@@ -353,6 +380,36 @@ def handle_init(args: argparse.Namespace) -> None:
         print(result.info())
 
 
+def handle_mark_item_as_equippable_in_slot(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.mark_item_as_equippable_in_slot(
+        slot=args.slot,
+        item_type=args.item_type,
+        item_address=args.item_address,
+        item_pool_id=args.item_pool_id,
+        max_amount=args.max_amount,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
+def handle_max_amount_of_item_in_slot(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.max_amount_of_item_in_slot(
+        slot=args.slot,
+        item_type=args.item_type,
+        item_address=args.item_address,
+        item_pool_id=args.item_pool_id,
+        block_number=args.block_number,
+    )
+    print(result)
+
+
 def handle_num_slots(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
@@ -479,6 +536,49 @@ def generate_cli() -> argparse.ArgumentParser:
     )
     init_parser.add_argument("--subject-address", required=True, help="Type: address")
     init_parser.set_defaults(func=handle_init)
+
+    mark_item_as_equippable_in_slot_parser = subcommands.add_parser(
+        "mark-item-as-equippable-in-slot"
+    )
+    add_default_arguments(mark_item_as_equippable_in_slot_parser, True)
+    mark_item_as_equippable_in_slot_parser.add_argument(
+        "--slot", required=True, help="Type: uint256", type=int
+    )
+    mark_item_as_equippable_in_slot_parser.add_argument(
+        "--item-type", required=True, help="Type: uint256", type=int
+    )
+    mark_item_as_equippable_in_slot_parser.add_argument(
+        "--item-address", required=True, help="Type: address"
+    )
+    mark_item_as_equippable_in_slot_parser.add_argument(
+        "--item-pool-id", required=True, help="Type: uint256", type=int
+    )
+    mark_item_as_equippable_in_slot_parser.add_argument(
+        "--max-amount", required=True, help="Type: uint256", type=int
+    )
+    mark_item_as_equippable_in_slot_parser.set_defaults(
+        func=handle_mark_item_as_equippable_in_slot
+    )
+
+    max_amount_of_item_in_slot_parser = subcommands.add_parser(
+        "max-amount-of-item-in-slot"
+    )
+    add_default_arguments(max_amount_of_item_in_slot_parser, False)
+    max_amount_of_item_in_slot_parser.add_argument(
+        "--slot", required=True, help="Type: uint256", type=int
+    )
+    max_amount_of_item_in_slot_parser.add_argument(
+        "--item-type", required=True, help="Type: uint256", type=int
+    )
+    max_amount_of_item_in_slot_parser.add_argument(
+        "--item-address", required=True, help="Type: address"
+    )
+    max_amount_of_item_in_slot_parser.add_argument(
+        "--item-pool-id", required=True, help="Type: uint256", type=int
+    )
+    max_amount_of_item_in_slot_parser.set_defaults(
+        func=handle_max_amount_of_item_in_slot
+    )
 
     num_slots_parser = subcommands.add_parser("num-slots")
     add_default_arguments(num_slots_parser, False)

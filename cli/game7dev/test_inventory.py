@@ -195,3 +195,79 @@ class AdminFlowTests(InventoryTestCase):
         num_slots_1 = self.inventory.num_slots()
 
         self.assertEqual(num_slots_1, num_slots_0)
+
+    def test_admin_can_mark_erc20_tokens_as_eligible_for_slots(self):
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        erc20_type = self.inventory.erc20_item_type()
+
+        tx_receipt = self.inventory.mark_item_as_equippable_in_slot(
+            slot,
+            erc20_type,
+            self.payment_token.address,
+            0,
+            MAX_UINT,
+            {"from": self.admin},
+        )
+
+        self.assertEqual(
+            self.inventory.max_amount_of_item_in_slot(
+                slot, erc20_type, self.payment_token.address, 0
+            ),
+            MAX_UINT,
+        )
+
+        item_marked_as_equippable_in_slot_events = _fetch_events_chunk(
+            web3_client,
+            inventory_events.ITEM_MARKED_AS_EQUIPPABLE_IN_SLOT_ABI,
+            tx_receipt.block_number,
+            tx_receipt.block_number,
+        )
+
+        self.assertEqual(len(item_marked_as_equippable_in_slot_events), 1)
+        self.assertEqual(
+            item_marked_as_equippable_in_slot_events[0]["args"]["slot"],
+            slot,
+        )
+        self.assertEqual(
+            item_marked_as_equippable_in_slot_events[0]["args"]["itemType"],
+            erc20_type,
+        )
+        self.assertEqual(
+            item_marked_as_equippable_in_slot_events[0]["args"]["itemAddress"],
+            self.payment_token.address,
+        )
+        self.assertEqual(
+            item_marked_as_equippable_in_slot_events[0]["args"]["itemPoolId"],
+            0,
+        )
+        self.assertEqual(
+            item_marked_as_equippable_in_slot_events[0]["args"]["maxAmount"],
+            MAX_UINT,
+        )
+
+    def test_nonadmin_cannot_mark_erc20_tokens_as_eligible_for_slots(self):
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        erc20_type = self.inventory.erc20_item_type()
+
+        with self.assertRaises(VirtualMachineError):
+            self.inventory.mark_item_as_equippable_in_slot(
+                slot,
+                erc20_type,
+                self.payment_token.address,
+                0,
+                MAX_UINT,
+                {"from": self.player},
+            )
+
+        self.assertEqual(
+            self.inventory.max_amount_of_item_in_slot(
+                slot, erc20_type, self.payment_token.address, 0
+            ),
+            0,
+        )

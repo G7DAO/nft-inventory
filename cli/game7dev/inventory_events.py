@@ -57,3 +57,36 @@ INVENTORY_SLOT_CREATED_ABI = {
     "name": "InventorySlotCreated",
     "type": "event",
 }
+
+ITEM_MARKED_AS_EQUIPPABLE_IN_SLOT_ABI = {
+    "anonymous": False,
+    "inputs": [
+        {"indexed": True, "internalType": "uint256", "name": "slot", "type": "uint256"},
+        {
+            "indexed": True,
+            "internalType": "uint256",
+            "name": "itemType",
+            "type": "uint256",
+        },
+        {
+            "indexed": True,
+            "internalType": "address",
+            "name": "itemAddress",
+            "type": "address",
+        },
+        {
+            "indexed": False,
+            "internalType": "uint256",
+            "name": "itemPoolId",
+            "type": "uint256",
+        },
+        {
+            "indexed": False,
+            "internalType": "uint256",
+            "name": "maxAmount",
+            "type": "uint256",
+        },
+    ],
+    "name": "ItemMarkedAsEquippableInSlot",
+    "type": "event",
+}
