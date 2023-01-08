@@ -28,6 +28,7 @@ library LibInventory {
         address AdminTerminusAddress;
         uint256 AdminTerminusPoolId;
         address SubjectERC721Address;
+        uint256 NumSlots;
     }
 
     function inventoryStorage()
@@ -50,6 +51,15 @@ It implements an inventory system which can be layered onto any ERC721 contract.
 
 For more details, please refer to the design document:
 https://docs.google.com/document/d/1Oa9I9b7t46_ngYp-Pady5XKEDW8M2NE9rI0GBRACZBI/edit?usp=sharing
+
+Admin flow:
+- [x] Create inventory slots
+- [ ] Mark tokens as equippable in inventory slots
+
+Player flow:
+- [ ] Equip ERC721 tokens in eligible inventory slots
+- [ ] Equip ERC20 tokens in eligible inventory slots
+- [ ] Equip ERC1155 tokens in eligible inventory slots
  */
 contract InventoryFacet is
     ERC721Holder,
@@ -71,12 +81,25 @@ contract InventoryFacet is
         _;
     }
 
+    uint256 public ERC20_ITEM_TYPE = 1;
+    uint256 public ERC721_ITEM_TYPE = 2;
+    uint256 public ERC1155_ITEM_TYPE = 3;
+
+    struct EquippableItem {
+        uint256 ItemType;
+        uint256 ContractAddress;
+        uint256 PoolId;
+        uint256 MaxAmount;
+    }
+
     event AdministratorDesignated(
         address indexed adminTerminusAddress,
         uint256 indexed adminTerminusPoolId
     );
 
     event SubjectDesignated(address indexed subjectAddress);
+
+    event InventorySlotCreated(address indexed creator, uint256 slot);
 
     /**
     An Inventory must be initialized with:
@@ -108,5 +131,19 @@ contract InventoryFacet is
 
     function subject() external view returns (address) {
         return LibInventory.inventoryStorage().SubjectERC721Address;
+    }
+
+    function createSlot() external onlyAdmin returns (uint256) {
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        uint256 newSlot = istore.NumSlots++;
+
+        emit InventorySlotCreated(msg.sender, newSlot);
+        return newSlot;
+    }
+
+    function numSlots() external view returns (uint256) {
+        return LibInventory.inventoryStorage().NumSlots;
     }
 }

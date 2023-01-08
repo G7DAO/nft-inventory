@@ -96,11 +96,33 @@ class InventoryFacet:
         contract_class = contract_from_build(self.contract_name)
         contract_class.publish_source(self.contract)
 
+    def erc1155_item_type(
+        self, block_number: Optional[Union[str, int]] = "latest"
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.ERC1155_ITEM_TYPE.call(block_identifier=block_number)
+
+    def erc20_item_type(
+        self, block_number: Optional[Union[str, int]] = "latest"
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.ERC20_ITEM_TYPE.call(block_identifier=block_number)
+
+    def erc721_item_type(
+        self, block_number: Optional[Union[str, int]] = "latest"
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.ERC721_ITEM_TYPE.call(block_identifier=block_number)
+
     def admin_terminus_info(
         self, block_number: Optional[Union[str, int]] = "latest"
     ) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.adminTerminusInfo.call(block_identifier=block_number)
+
+    def create_slot(self, transaction_config) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.createSlot(transaction_config)
 
     def init(
         self,
@@ -116,6 +138,10 @@ class InventoryFacet:
             subject_address,
             transaction_config,
         )
+
+    def num_slots(self, block_number: Optional[Union[str, int]] = "latest") -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.numSlots.call(block_identifier=block_number)
 
     def on_erc1155_batch_received(
         self,
@@ -255,11 +281,42 @@ def handle_verify_contract(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_erc1155_item_type(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.erc1155_item_type(block_number=args.block_number)
+    print(result)
+
+
+def handle_erc20_item_type(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.erc20_item_type(block_number=args.block_number)
+    print(result)
+
+
+def handle_erc721_item_type(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.erc721_item_type(block_number=args.block_number)
+    print(result)
+
+
 def handle_admin_terminus_info(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
     result = contract.admin_terminus_info(block_number=args.block_number)
     print(result)
+
+
+def handle_create_slot(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.create_slot(transaction_config=transaction_config)
+    print(result)
+    if args.verbose:
+        print(result.info())
 
 
 def handle_init(args: argparse.Namespace) -> None:
@@ -275,6 +332,13 @@ def handle_init(args: argparse.Namespace) -> None:
     print(result)
     if args.verbose:
         print(result.info())
+
+
+def handle_num_slots(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.num_slots(block_number=args.block_number)
+    print(result)
 
 
 def handle_on_erc1155_batch_received(args: argparse.Namespace) -> None:
@@ -356,9 +420,25 @@ def generate_cli() -> argparse.ArgumentParser:
     add_default_arguments(verify_contract_parser, False)
     verify_contract_parser.set_defaults(func=handle_verify_contract)
 
+    erc1155_item_type_parser = subcommands.add_parser("erc1155-item-type")
+    add_default_arguments(erc1155_item_type_parser, False)
+    erc1155_item_type_parser.set_defaults(func=handle_erc1155_item_type)
+
+    erc20_item_type_parser = subcommands.add_parser("erc20-item-type")
+    add_default_arguments(erc20_item_type_parser, False)
+    erc20_item_type_parser.set_defaults(func=handle_erc20_item_type)
+
+    erc721_item_type_parser = subcommands.add_parser("erc721-item-type")
+    add_default_arguments(erc721_item_type_parser, False)
+    erc721_item_type_parser.set_defaults(func=handle_erc721_item_type)
+
     admin_terminus_info_parser = subcommands.add_parser("admin-terminus-info")
     add_default_arguments(admin_terminus_info_parser, False)
     admin_terminus_info_parser.set_defaults(func=handle_admin_terminus_info)
+
+    create_slot_parser = subcommands.add_parser("create-slot")
+    add_default_arguments(create_slot_parser, True)
+    create_slot_parser.set_defaults(func=handle_create_slot)
 
     init_parser = subcommands.add_parser("init")
     add_default_arguments(init_parser, True)
@@ -370,6 +450,10 @@ def generate_cli() -> argparse.ArgumentParser:
     )
     init_parser.add_argument("--subject-address", required=True, help="Type: address")
     init_parser.set_defaults(func=handle_init)
+
+    num_slots_parser = subcommands.add_parser("num-slots")
+    add_default_arguments(num_slots_parser, False)
+    num_slots_parser.set_defaults(func=handle_num_slots)
 
     on_erc1155_batch_received_parser = subcommands.add_parser(
         "on-erc1155-batch-received"

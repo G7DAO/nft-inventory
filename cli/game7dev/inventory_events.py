@@ -31,3 +31,23 @@ SUBJECT_DESIGNATED_ABI = {
     "name": "SubjectDesignated",
     "type": "event",
 }
+
+INVENTORY_SLOT_CREATED_ABI = {
+    "anonymous": False,
+    "inputs": [
+        {
+            "indexed": True,
+            "internalType": "address",
+            "name": "creator",
+            "type": "address",
+        },
+        {
+            "indexed": False,
+            "internalType": "uint256",
+            "name": "slot",
+            "type": "uint256",
+        },
+    ],
+    "name": "InventorySlotCreated",
+    "type": "event",
+}

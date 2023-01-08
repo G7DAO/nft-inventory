@@ -103,3 +103,37 @@ class InventorySetupTests(InventoryTestCase):
             subject_designated_events[0]["args"]["subjectAddress"],
             self.nft.address,
         )
+
+
+class AdminFlowTests(InventoryTestCase):
+    def test_admin_can_create_slot(self):
+        num_slots_0 = self.inventory.num_slots()
+        tx_receipt = self.inventory.create_slot({"from": self.admin})
+        num_slots_1 = self.inventory.num_slots()
+
+        self.assertEqual(num_slots_1, num_slots_0 + 1)
+
+        inventory_slot_created_events = _fetch_events_chunk(
+            web3_client,
+            inventory_events.INVENTORY_SLOT_CREATED_ABI,
+            tx_receipt.block_number,
+            tx_receipt.block_number,
+        )
+
+        self.assertEqual(len(inventory_slot_created_events), 1)
+        self.assertEqual(
+            inventory_slot_created_events[0]["args"]["creator"],
+            self.admin.address,
+        )
+        self.assertEqual(
+            inventory_slot_created_events[0]["args"]["slot"],
+            num_slots_0,
+        )
+
+    def test_nonadmin_cannot_create_slot(self):
+        num_slots_0 = self.inventory.num_slots()
+        with self.assertRaises(VirtualMachineError):
+            self.inventory.create_slot({"from": self.player})
+        num_slots_1 = self.inventory.num_slots()
+
+        self.assertEqual(num_slots_1, num_slots_0)
