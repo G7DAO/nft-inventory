@@ -89,6 +89,9 @@ library LibInventory {
         pure
         returns (bool)
     {
+        // Checks that configuration has:
+        // - active 2^0 bit
+        // - no bits higher than the 2^1 bit have been set
         return configuration & 1 == 1 && configuration <= 3;
     }
 
