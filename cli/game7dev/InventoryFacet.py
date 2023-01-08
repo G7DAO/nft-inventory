@@ -106,11 +106,15 @@ class InventoryFacet:
         self,
         admin_terminus_address: ChecksumAddress,
         admin_terminus_pool_id: int,
+        subject_address: ChecksumAddress,
         transaction_config,
     ) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.init(
-            admin_terminus_address, admin_terminus_pool_id, transaction_config
+            admin_terminus_address,
+            admin_terminus_pool_id,
+            subject_address,
+            transaction_config,
         )
 
     def on_erc1155_batch_received(
@@ -153,6 +157,10 @@ class InventoryFacet:
         return self.contract.onERC721Received(
             arg1, arg2, arg3, arg4, transaction_config
         )
+
+    def subject(self, block_number: Optional[Union[str, int]] = "latest") -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.subject.call(block_identifier=block_number)
 
     def supports_interface(
         self, interface_id: bytes, block_number: Optional[Union[str, int]] = "latest"
@@ -261,6 +269,7 @@ def handle_init(args: argparse.Namespace) -> None:
     result = contract.init(
         admin_terminus_address=args.admin_terminus_address,
         admin_terminus_pool_id=args.admin_terminus_pool_id,
+        subject_address=args.subject_address,
         transaction_config=transaction_config,
     )
     print(result)
@@ -318,6 +327,13 @@ def handle_on_erc721_received(args: argparse.Namespace) -> None:
         print(result.info())
 
 
+def handle_subject(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.subject(block_number=args.block_number)
+    print(result)
+
+
 def handle_supports_interface(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
@@ -352,6 +368,7 @@ def generate_cli() -> argparse.ArgumentParser:
     init_parser.add_argument(
         "--admin-terminus-pool-id", required=True, help="Type: uint256", type=int
     )
+    init_parser.add_argument("--subject-address", required=True, help="Type: address")
     init_parser.set_defaults(func=handle_init)
 
     on_erc1155_batch_received_parser = subcommands.add_parser(
@@ -409,6 +426,10 @@ def generate_cli() -> argparse.ArgumentParser:
         "--arg4", required=True, help="Type: bytes", type=bytes_argument_type
     )
     on_erc721_received_parser.set_defaults(func=handle_on_erc721_received)
+
+    subject_parser = subcommands.add_parser("subject")
+    add_default_arguments(subject_parser, False)
+    subject_parser.set_defaults(func=handle_subject)
 
     supports_interface_parser = subcommands.add_parser("supports-interface")
     add_default_arguments(supports_interface_parser, False)

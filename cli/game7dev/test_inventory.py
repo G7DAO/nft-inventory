@@ -5,7 +5,7 @@ from brownie.exceptions import VirtualMachineError
 from brownie.network import chain
 from moonworm.watch import _fetch_events_chunk
 
-from . import InventoryFacet, MockERC20, MockTerminus, inventory_events
+from . import InventoryFacet, MockERC20, MockERC721, MockTerminus, inventory_events
 from .core import inventory_gogogo
 
 MAX_UINT = 2**256 - 1
@@ -25,6 +25,9 @@ class InventoryTestCase(unittest.TestCase):
         cls.admin = accounts[1]
         cls.player = accounts[2]
         cls.random_person = accounts[3]
+
+        cls.nft = MockERC721.MockERC721(None)
+        cls.nft.deploy(cls.owner_tx_config)
 
         cls.terminus = MockTerminus.MockTerminus(None)
         cls.terminus.deploy(cls.owner_tx_config)
@@ -49,7 +52,10 @@ class InventoryTestCase(unittest.TestCase):
 
         cls.predeployment_block = len(chain)
         cls.deployed_contracts = inventory_gogogo(
-            cls.terminus.address, cls.admin_terminus_pool_id, cls.owner_tx_config
+            cls.terminus.address,
+            cls.admin_terminus_pool_id,
+            cls.nft.address,
+            cls.owner_tx_config,
         )
         cls.postdeployment_block = len(chain)
         cls.inventory = InventoryFacet.InventoryFacet(
@@ -79,4 +85,21 @@ class InventorySetupTests(InventoryTestCase):
         self.assertEqual(
             administrator_designated_events[0]["args"]["adminTerminusPoolId"],
             self.admin_terminus_pool_id,
+        )
+
+    def test_subject_erc721_address(self):
+        self.assertEqual(self.inventory.subject(), self.nft.address)
+
+    def test_subject_designated_event(self):
+        subject_designated_events = _fetch_events_chunk(
+            web3_client,
+            inventory_events.SUBJECT_DESIGNATED_ABI,
+            self.predeployment_block,
+            self.postdeployment_block,
+        )
+        self.assertEqual(len(subject_designated_events), 1)
+
+        self.assertEqual(
+            subject_designated_events[0]["args"]["subjectAddress"],
+            self.nft.address,
         )

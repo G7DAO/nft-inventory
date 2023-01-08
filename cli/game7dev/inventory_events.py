@@ -17,3 +17,17 @@ ADMINISTRATOR_DESIGNATED_ABI = {
     "name": "AdministratorDesignated",
     "type": "event",
 }
+
+SUBJECT_DESIGNATED_ABI = {
+    "anonymous": False,
+    "inputs": [
+        {
+            "indexed": True,
+            "internalType": "address",
+            "name": "subjectAddress",
+            "type": "address",
+        }
+    ],
+    "name": "SubjectDesignated",
+    "type": "event",
+}
