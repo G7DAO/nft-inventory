@@ -6,7 +6,7 @@ from .version import VERSION
 
 def generate_cli() -> argparse.ArgumentParser:
     """
-    Generates the argument parsers for the game7dev command-line tool.
+    Generates the argument parsers for the game7ctl command-line tool.
     """
     parser = argparse.ArgumentParser(
         description="Development tools for Game7 smart contracts"
@@ -26,7 +26,7 @@ def generate_cli() -> argparse.ArgumentParser:
 
 def main() -> None:
     """
-    Executes the game7dev command line tool
+    Executes the game7ctl command line tool
     """
     parser = generate_cli()
     args = parser.parse_args()

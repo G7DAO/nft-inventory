@@ -1,7 +1,7 @@
 import os
 from setuptools import find_packages, setup
 
-with open("game7dev/version.txt") as ifp:
+with open("game7ctl/version.txt") as ifp:
     VERSION = ifp.read().strip()
 
 long_description = ""
@@ -13,7 +13,7 @@ with open("README.md") as ifp:
 os.environ["BROWNIE_LIB"] = "1"
 
 setup(
-    name="game7dev",
+    name="game7ctl",
     version=VERSION,
     packages=find_packages(),
     install_requires=["eth-brownie", "inspector-facet", "tqdm"],
@@ -34,9 +34,9 @@ setup(
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "game7dev=game7dev.cli:main",
+            "game7ctl=game7ctl.cli:main",
         ]
     },
-    package_data={"game7dev": ["version.txt"]},
+    package_data={"game7ctl": ["version.txt"]},
     include_package_data=True,
 )
