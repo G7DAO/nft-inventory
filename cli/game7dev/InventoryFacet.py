@@ -106,6 +106,38 @@ class InventoryFacet:
         self.assert_contract_is_instantiated()
         return self.contract.createSlot(configuration, transaction_config)
 
+    def equip(
+        self,
+        subject_token_id: int,
+        slot: int,
+        item_type: int,
+        item_address: ChecksumAddress,
+        item_token_id: int,
+        amount: int,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.equip(
+            subject_token_id,
+            slot,
+            item_type,
+            item_address,
+            item_token_id,
+            amount,
+            transaction_config,
+        )
+
+    def equipped(
+        self,
+        subject_token_id: int,
+        slot: int,
+        block_number: Optional[Union[str, int]] = "latest",
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.equipped.call(
+            subject_token_id, slot, block_identifier=block_number
+        )
+
     def get_slot_configuration(
         self, slot: int, block_number: Optional[Union[str, int]] = "latest"
     ) -> Any:
@@ -317,6 +349,35 @@ def handle_create_slot(args: argparse.Namespace) -> None:
         print(result.info())
 
 
+def handle_equip(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.equip(
+        subject_token_id=args.subject_token_id,
+        slot=args.slot,
+        item_type=args.item_type,
+        item_address=args.item_address,
+        item_token_id=args.item_token_id,
+        amount=args.amount,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
+def handle_equipped(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.equipped(
+        subject_token_id=args.subject_token_id,
+        slot=args.slot,
+        block_number=args.block_number,
+    )
+    print(result)
+
+
 def handle_get_slot_configuration(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
@@ -467,6 +528,32 @@ def generate_cli() -> argparse.ArgumentParser:
         "--configuration", required=True, help="Type: uint256", type=int
     )
     create_slot_parser.set_defaults(func=handle_create_slot)
+
+    equip_parser = subcommands.add_parser("equip")
+    add_default_arguments(equip_parser, True)
+    equip_parser.add_argument(
+        "--subject-token-id", required=True, help="Type: uint256", type=int
+    )
+    equip_parser.add_argument("--slot", required=True, help="Type: uint256", type=int)
+    equip_parser.add_argument(
+        "--item-type", required=True, help="Type: uint256", type=int
+    )
+    equip_parser.add_argument("--item-address", required=True, help="Type: address")
+    equip_parser.add_argument(
+        "--item-token-id", required=True, help="Type: uint256", type=int
+    )
+    equip_parser.add_argument("--amount", required=True, help="Type: uint256", type=int)
+    equip_parser.set_defaults(func=handle_equip)
+
+    equipped_parser = subcommands.add_parser("equipped")
+    add_default_arguments(equipped_parser, False)
+    equipped_parser.add_argument(
+        "--subject-token-id", required=True, help="Type: uint256", type=int
+    )
+    equipped_parser.add_argument(
+        "--slot", required=True, help="Type: uint256", type=int
+    )
+    equipped_parser.set_defaults(func=handle_equipped)
 
     get_slot_configuration_parser = subcommands.add_parser("get-slot-configuration")
     add_default_arguments(get_slot_configuration_parser, False)

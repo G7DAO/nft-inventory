@@ -27,6 +27,15 @@ library LibInventory {
     uint256 constant ERC20_ITEM_TYPE = 20;
     uint256 constant ERC721_ITEM_TYPE = 721;
     uint256 constant ERC1155_ITEM_TYPE = 1155;
+    uint256 constant UNEQUIP_ITEM_TYPE = 0;
+
+    // EquippedItem represents an item equipped in a specific inventory slot for a specific ERC721 token.
+    struct EquippedItem {
+        uint256 ItemType;
+        address ItemAddress;
+        uint256 ItemTokenId;
+        uint256 Amount;
+    }
 
     struct InventoryStorage {
         address AdminTerminusAddress;
@@ -45,9 +54,23 @@ library LibInventory {
         // Slot => item type => item address => item pool ID => maximum equippable
         // For ERC20 and ERC721 tokens, item pool ID is assumed to be 0. No data will be stored under positive
         // item pool IDs.
-        // Note that it is possible for the same contract to implement multiple of these ERCs (e.g. ERC20 and ERC721),
+        //
+        // NOTE: It is possible for the same contract to implement multiple of these ERCs (e.g. ERC20 and ERC721),
         // so this data structure actually makes sense.
         mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) SlotEligibleItems;
+        // Subject contract address => subject token ID => slot => EquippedItem
+        // Item type and Pool ID on EquippedItem have the same constraints as they do elsewhere (e.g. in SlotEligibleItems).
+        //
+        // NOTE: We have added the subject contract address as the first mapping key as a defense against
+        // future modifications which may allow administrators to modify the subject contract address.
+        // If such a modification were made, it could make it possible for a bad actor administrator
+        // to change the address of the subject token to the address to an ERC721 contract they control
+        // and drain all items from every subject token's inventory.
+        // If this contract is deployed as a Diamond proxy, the owner of the Diamond can pretty much
+        // do whatever they want in any case, but adding the subject contract address as a key protects
+        // users of non-Diamond deployments even under small variants of the current implementation.
+        // It also offers *some* protection to users of Diamond deployments of the Inventory.
+        mapping(address => mapping(uint256 => mapping(uint256 => EquippedItem))) EquippedItems;
     }
 
     function inventoryStorage()
@@ -93,9 +116,15 @@ Admin flow:
 - [x] Define tokens as equippable in inventory slots
 
 Player flow:
-- [ ] Equip ERC721 tokens in eligible inventory slots
 - [ ] Equip ERC20 tokens in eligible inventory slots
+- [ ] Equip ERC721 tokens in eligible inventory slots
 - [ ] Equip ERC1155 tokens in eligible inventory slots
+- [ ] Unequip items from unequippable slots
+
+Batch endpoints:
+- [ ] Marking items as equippable
+- [ ] Equipping items
+- [ ] Unequipping items
  */
 contract InventoryFacet is
     ERC721Holder,
@@ -254,5 +283,110 @@ contract InventoryFacet is
             LibInventory.inventoryStorage().SlotEligibleItems[slot][itemType][
                 itemAddress
             ][itemPoolId];
+    }
+
+    function equip(
+        uint256 subjectTokenId,
+        uint256 slot,
+        uint256 itemType,
+        address itemAddress,
+        uint256 itemTokenId,
+        uint256 amount
+    ) external {
+        require(
+            itemType == LibInventory.ERC20_ITEM_TYPE ||
+                itemType == LibInventory.ERC721_ITEM_TYPE ||
+                itemType == LibInventory.ERC1155_ITEM_TYPE ||
+                itemType == LibInventory.UNEQUIP_ITEM_TYPE,
+            "InventoryFacet.equip: Invalid item type"
+        );
+        require(
+            itemType == LibInventory.ERC721_ITEM_TYPE ||
+                itemType == LibInventory.ERC1155_ITEM_TYPE ||
+                itemTokenId == 0,
+            "InventoryFacet.equip: itemTokenId can only be non-zero for ERC721 or ERC1155 items"
+        );
+        require(
+            itemType == LibInventory.ERC20_ITEM_TYPE ||
+                itemType == LibInventory.ERC1155_ITEM_TYPE ||
+                amount <= 1,
+            "InventoryFacet.equip: amount can exceed 1 only for ERC20 and ERC1155 items"
+        );
+        require(
+            itemType != LibInventory.UNEQUIP_ITEM_TYPE || amount == 0,
+            "InventoryFacet.equip: amout should be 0 if you are unequipping an item"
+        );
+
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        IERC721 subjectContract = IERC721(istore.SubjectERC721Address);
+        require(
+            msg.sender == subjectContract.ownerOf(subjectTokenId),
+            "InventoryFacet.equip: Message sender is not owner of subject token"
+        );
+
+        LibInventory.EquippedItem memory existingItem = istore.EquippedItems[
+            istore.SubjectERC721Address
+        ][subjectTokenId][slot];
+
+        // TODO(zomglings): To set things up, we will only test equipping workflow. To make it
+        // so that tokens cannot be unequipped, we require that the existingItem.ItemType be zero.
+        // We will turn this off when we add support for unequipping items from unequippable slots
+        // and when we want to add support for reupping items of the same already equipped type into
+        // a slot.
+        require(
+            existingItem.ItemType == 0,
+            "InventoryFacet.equip: This is a temporary restriction that no item can already be equipped in the given slot"
+        );
+
+        // TODO(zomglings): When we support reupping items, we will need to modify the amount in the check
+        // below to amount + existingItem.amount.
+        require(
+            itemType == LibInventory.UNEQUIP_ITEM_TYPE ||
+                istore.SlotEligibleItems[slot][itemType][itemAddress][
+                    itemTokenId
+                ] >=
+                amount,
+            "InventoryFacet.equip: You can not equip those many instances of that item into the given slot"
+        );
+
+        // TODO(zomglings): Add case here when we need to support unequipping.
+        if (itemType == LibInventory.ERC20_ITEM_TYPE) {
+            IERC20 erc20Contract = IERC20(itemAddress);
+            bool erc20TransferSuccess = erc20Contract.transferFrom(
+                msg.sender,
+                address(this),
+                amount
+            );
+            require(
+                erc20TransferSuccess,
+                "InventoryFacet.equip: Error equipping ERC20 item - transfer was unsuccessful"
+            );
+        }
+
+        istore.EquippedItems[istore.SubjectERC721Address][subjectTokenId][
+                slot
+            ] = LibInventory.EquippedItem({
+            ItemType: itemType,
+            ItemAddress: itemAddress,
+            ItemTokenId: itemTokenId,
+            Amount: amount
+        });
+    }
+
+    function equipped(uint256 subjectTokenId, uint256 slot)
+        external
+        view
+        returns (LibInventory.EquippedItem memory item)
+    {
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        LibInventory.EquippedItem memory equippedItem = istore.EquippedItems[
+            istore.SubjectERC721Address
+        ][subjectTokenId][slot];
+
+        return equippedItem;
     }
 }

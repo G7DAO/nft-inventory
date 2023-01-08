@@ -105,7 +105,7 @@ class InventorySetupTests(InventoryTestCase):
         )
 
 
-class AdminFlowTests(InventoryTestCase):
+class TestAdminFlow(InventoryTestCase):
     def test_admin_can_create_nonunequippable_slot(self):
         slot_configuration = 1
 
@@ -603,3 +603,70 @@ class AdminFlowTests(InventoryTestCase):
             ),
             0,
         )
+
+
+class TestPlayerFlow(InventoryTestCase):
+    def test_player_can_equip_erc20_items_onto_their_subject_tokens(self):
+        # Mint tokens to player and set approvals
+        subject_token_id = self.nft.total_supply()
+        self.nft.mint(self.player.address, subject_token_id, {"from": self.owner})
+        self.payment_token.mint(self.player.address, 1000, {"from": self.owner})
+        self.payment_token.approve(
+            self.inventory.address, MAX_UINT, {"from": self.player}
+        )
+
+        # Create inventory slot
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        # Set ERC20 token as equippable in slot with max amount of 10
+        self.inventory.mark_item_as_equippable_in_slot(
+            slot, 20, self.payment_token.address, 0, 10, {"from": self.admin}
+        )
+
+        self.inventory.equip(
+            subject_token_id,
+            slot,
+            20,
+            self.payment_token.address,
+            0,
+            2,
+            {"from": self.player},
+        )
+
+        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(equipped_item, (20, self.payment_token.address, 0, 2))
+
+    def test_player_cannot_equip_too_many_erc20_items_onto_their_subject_tokens(self):
+        # Mint tokens to player and set approvals
+        subject_token_id = self.nft.total_supply()
+        self.nft.mint(self.player.address, subject_token_id, {"from": self.owner})
+        self.payment_token.mint(self.player.address, 1000, {"from": self.owner})
+        self.payment_token.approve(
+            self.inventory.address, MAX_UINT, {"from": self.player}
+        )
+
+        # Create inventory slot
+        slot_configuration = 3
+        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        # Set ERC20 token as equippable in slot with max amount of 10
+        self.inventory.mark_item_as_equippable_in_slot(
+            slot, 20, self.payment_token.address, 0, 10, {"from": self.admin}
+        )
+
+        with self.assertRaises(VirtualMachineError):
+            self.inventory.equip(
+                subject_token_id,
+                slot,
+                20,
+                self.payment_token.address,
+                0,
+                20,
+                {"from": self.player},
+            )
+
+        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
