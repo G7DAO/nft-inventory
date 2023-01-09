@@ -329,10 +329,27 @@ contract InventoryFacet is
             );
         } else if (itemType == LibInventory.ERC721_ITEM_TYPE) {
             IERC721 erc721Contract = IERC721(itemAddress);
+            require(
+                msg.sender == erc721Contract.ownerOf(itemTokenId),
+                "InventoryFacet.equip: Message sender cannot equip an item that they do not own"
+            );
             erc721Contract.safeTransferFrom(
                 msg.sender,
                 address(this),
                 itemTokenId
+            );
+        } else if (itemType == LibInventory.ERC1155_ITEM_TYPE) {
+            IERC1155 erc1155Contract = IERC1155(itemAddress);
+            require(
+                erc1155Contract.balanceOf(msg.sender, itemTokenId) >= amount,
+                "InventoryFacet.equip: Message sender does not own enough of that item to equip"
+            );
+            erc1155Contract.safeTransferFrom(
+                msg.sender,
+                address(this),
+                itemTokenId,
+                amount,
+                ""
             );
         }
 

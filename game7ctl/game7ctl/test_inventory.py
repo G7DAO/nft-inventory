@@ -717,11 +717,6 @@ class TestPlayerFlow(InventoryTestCase):
             self.inventory.address, True, {"from": self.player}
         )
 
-        self.payment_token.mint(self.player.address, 1000, {"from": self.owner})
-        self.payment_token.approve(
-            self.inventory.address, MAX_UINT, {"from": self.player}
-        )
-
         # Create inventory slot
         unequippable = True
         self.inventory.create_slot(unequippable, {"from": self.admin})
@@ -780,3 +775,181 @@ class TestPlayerFlow(InventoryTestCase):
             item_equipped_events[0]["args"]["equippedBy"],
             self.player.address,
         )
+
+    def test_player_cannot_equip_erc721_items_which_they_do_not_own(self):
+        # Mint tokens to player and set approvals
+        subject_token_id = self.nft.total_supply()
+        self.nft.mint(self.player.address, subject_token_id, {"from": self.owner})
+
+        item_token_id = self.item_nft.total_supply()
+        self.item_nft.mint(
+            self.random_person.address, item_token_id, {"from": self.owner}
+        )
+        self.item_nft.set_approval_for_all(
+            self.inventory.address, True, {"from": self.random_person}
+        )
+
+        # Create inventory slot
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        # Set ERC721 token as equippable in slot with max amount of 1
+        self.inventory.mark_item_as_equippable_in_slot(
+            slot, 721, self.item_nft.address, 0, 1, {"from": self.admin}
+        )
+
+        self.assertEqual(
+            self.item_nft.owner_of(item_token_id), self.random_person.address
+        )
+
+        with self.assertRaises(VirtualMachineError):
+            self.inventory.equip(
+                subject_token_id,
+                slot,
+                721,
+                self.item_nft.address,
+                item_token_id,
+                1,
+                {"from": self.player},
+            )
+
+        self.assertEqual(
+            self.item_nft.owner_of(item_token_id), self.random_person.address
+        )
+
+        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
+
+    def test_player_can_equip_erc1155_items_onto_their_subject_tokens(self):
+        # Mint tokens to player and set approvals
+        subject_token_id = self.nft.total_supply()
+        self.nft.mint(self.player.address, subject_token_id, {"from": self.owner})
+
+        self.terminus.create_pool_v1(MAX_UINT, True, True, self.owner_tx_config)
+        item_pool_id = self.terminus.total_pools()
+        self.terminus.mint(
+            self.player.address, item_pool_id, 100, "", self.owner_tx_config
+        )
+        self.terminus.set_approval_for_all(
+            self.inventory.address, True, {"from": self.player}
+        )
+
+        # Create inventory slot
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        # Set ERC1155 token as equippable in slot with max amount of 10
+        self.inventory.mark_item_as_equippable_in_slot(
+            slot, 1155, self.terminus.address, item_pool_id, 10, {"from": self.admin}
+        )
+
+        player_balance_0 = self.terminus.balance_of(self.player.address, item_pool_id)
+        inventory_balance_0 = self.terminus.balance_of(
+            self.inventory.address, item_pool_id
+        )
+
+        tx_receipt = self.inventory.equip(
+            subject_token_id,
+            slot,
+            1155,
+            self.terminus.address,
+            item_pool_id,
+            10,
+            {"from": self.player},
+        )
+
+        player_balance_1 = self.terminus.balance_of(self.player.address, item_pool_id)
+        inventory_balance_1 = self.terminus.balance_of(
+            self.inventory.address, item_pool_id
+        )
+
+        self.assertEqual(player_balance_1, player_balance_0 - 10)
+        self.assertEqual(inventory_balance_1, inventory_balance_0 + 10)
+
+        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(equipped_item, (1155, self.terminus.address, item_pool_id, 10))
+
+        item_equipped_events = _fetch_events_chunk(
+            web3_client,
+            inventory_events.ITEM_EQUIPPED_ABI,
+            from_block=tx_receipt.block_number,
+            to_block=tx_receipt.block_number,
+        )
+        self.assertEqual(len(item_equipped_events), 1)
+
+        self.assertEqual(
+            item_equipped_events[0]["args"]["subjectTokenId"], subject_token_id
+        )
+        self.assertEqual(
+            item_equipped_events[0]["args"]["itemType"],
+            1155,
+        )
+        self.assertEqual(
+            item_equipped_events[0]["args"]["itemAddress"],
+            self.terminus.address,
+        )
+        self.assertEqual(
+            item_equipped_events[0]["args"]["itemTokenId"],
+            item_pool_id,
+        )
+        self.assertEqual(
+            item_equipped_events[0]["args"]["amount"],
+            10,
+        )
+        self.assertEqual(
+            item_equipped_events[0]["args"]["equippedBy"],
+            self.player.address,
+        )
+
+    def test_player_cannot_equip_too_many_erc1155_items_onto_their_subject_tokens(self):
+        # Mint tokens to player and set approvals
+        subject_token_id = self.nft.total_supply()
+        self.nft.mint(self.player.address, subject_token_id, {"from": self.owner})
+
+        self.terminus.create_pool_v1(MAX_UINT, True, True, self.owner_tx_config)
+        item_pool_id = self.terminus.total_pools()
+        self.terminus.mint(
+            self.player.address, item_pool_id, 100, "", self.owner_tx_config
+        )
+        self.terminus.set_approval_for_all(
+            self.inventory.address, True, {"from": self.player}
+        )
+
+        # Create inventory slot
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        # Set ERC1155 token as equippable in slot with max amount of 10
+        self.inventory.mark_item_as_equippable_in_slot(
+            slot, 1155, self.terminus.address, item_pool_id, 10, {"from": self.admin}
+        )
+
+        player_balance_0 = self.terminus.balance_of(self.player.address, item_pool_id)
+        inventory_balance_0 = self.terminus.balance_of(
+            self.inventory.address, item_pool_id
+        )
+
+        with self.assertRaises(VirtualMachineError):
+            self.inventory.equip(
+                subject_token_id,
+                slot,
+                1155,
+                self.terminus.address,
+                item_pool_id,
+                11,
+                {"from": self.player},
+            )
+
+        player_balance_1 = self.terminus.balance_of(self.player.address, item_pool_id)
+        inventory_balance_1 = self.terminus.balance_of(
+            self.inventory.address, item_pool_id
+        )
+
+        self.assertEqual(player_balance_1, player_balance_0)
+        self.assertEqual(inventory_balance_1, inventory_balance_0)
+
+        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
