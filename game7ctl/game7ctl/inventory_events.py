@@ -32,7 +32,7 @@ SUBJECT_DESIGNATED_ABI = {
     "type": "event",
 }
 
-INVENTORY_SLOT_CREATED_ABI = {
+SLOT_CREATED_ABI = {
     "anonymous": False,
     "inputs": [
         {
@@ -49,12 +49,12 @@ INVENTORY_SLOT_CREATED_ABI = {
         },
         {
             "indexed": False,
-            "internalType": "uint256",
-            "name": "slotConfiguration",
-            "type": "uint256",
+            "internalType": "bool",
+            "name": "unequippable",
+            "type": "bool",
         },
     ],
-    "name": "InventorySlotCreated",
+    "name": "SlotCreated",
     "type": "event",
 }
 

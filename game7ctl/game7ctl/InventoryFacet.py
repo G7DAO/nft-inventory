@@ -102,9 +102,9 @@ class InventoryFacet:
         self.assert_contract_is_instantiated()
         return self.contract.adminTerminusInfo.call(block_identifier=block_number)
 
-    def create_slot(self, configuration: int, transaction_config) -> Any:
+    def create_slot(self, unequippable: bool, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
-        return self.contract.createSlot(configuration, transaction_config)
+        return self.contract.createSlot(unequippable, transaction_config)
 
     def equip(
         self,
@@ -136,14 +136,6 @@ class InventoryFacet:
         self.assert_contract_is_instantiated()
         return self.contract.equipped.call(
             subject_token_id, slot, block_identifier=block_number
-        )
-
-    def get_slot_configuration(
-        self, slot: int, block_number: Optional[Union[str, int]] = "latest"
-    ) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.getSlotConfiguration.call(
-            slot, block_identifier=block_number
         )
 
     def init(
@@ -231,6 +223,14 @@ class InventoryFacet:
         self.assert_contract_is_instantiated()
         return self.contract.onERC721Received(
             arg1, arg2, arg3, arg4, transaction_config
+        )
+
+    def slot_is_unequippable(
+        self, slot: int, block_number: Optional[Union[str, int]] = "latest"
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.slotIsUnequippable.call(
+            slot, block_identifier=block_number
         )
 
     def subject(self, block_number: Optional[Union[str, int]] = "latest") -> Any:
@@ -342,7 +342,7 @@ def handle_create_slot(args: argparse.Namespace) -> None:
     contract = InventoryFacet(args.address)
     transaction_config = get_transaction_config(args)
     result = contract.create_slot(
-        configuration=args.configuration, transaction_config=transaction_config
+        unequippable=args.unequippable, transaction_config=transaction_config
     )
     print(result)
     if args.verbose:
@@ -374,15 +374,6 @@ def handle_equipped(args: argparse.Namespace) -> None:
         subject_token_id=args.subject_token_id,
         slot=args.slot,
         block_number=args.block_number,
-    )
-    print(result)
-
-
-def handle_get_slot_configuration(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = InventoryFacet(args.address)
-    result = contract.get_slot_configuration(
-        slot=args.slot, block_number=args.block_number
     )
     print(result)
 
@@ -489,6 +480,15 @@ def handle_on_erc721_received(args: argparse.Namespace) -> None:
         print(result.info())
 
 
+def handle_slot_is_unequippable(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.slot_is_unequippable(
+        slot=args.slot, block_number=args.block_number
+    )
+    print(result)
+
+
 def handle_subject(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
@@ -525,7 +525,7 @@ def generate_cli() -> argparse.ArgumentParser:
     create_slot_parser = subcommands.add_parser("create-slot")
     add_default_arguments(create_slot_parser, True)
     create_slot_parser.add_argument(
-        "--configuration", required=True, help="Type: uint256", type=int
+        "--unequippable", required=True, help="Type: bool", type=boolean_argument_type
     )
     create_slot_parser.set_defaults(func=handle_create_slot)
 
@@ -554,13 +554,6 @@ def generate_cli() -> argparse.ArgumentParser:
         "--slot", required=True, help="Type: uint256", type=int
     )
     equipped_parser.set_defaults(func=handle_equipped)
-
-    get_slot_configuration_parser = subcommands.add_parser("get-slot-configuration")
-    add_default_arguments(get_slot_configuration_parser, False)
-    get_slot_configuration_parser.add_argument(
-        "--slot", required=True, help="Type: uint256", type=int
-    )
-    get_slot_configuration_parser.set_defaults(func=handle_get_slot_configuration)
 
     init_parser = subcommands.add_parser("init")
     add_default_arguments(init_parser, True)
@@ -675,6 +668,13 @@ def generate_cli() -> argparse.ArgumentParser:
         "--arg4", required=True, help="Type: bytes", type=bytes_argument_type
     )
     on_erc721_received_parser.set_defaults(func=handle_on_erc721_received)
+
+    slot_is_unequippable_parser = subcommands.add_parser("slot-is-unequippable")
+    add_default_arguments(slot_is_unequippable_parser, False)
+    slot_is_unequippable_parser.add_argument(
+        "--slot", required=True, help="Type: uint256", type=int
+    )
+    slot_is_unequippable_parser.set_defaults(func=handle_slot_is_unequippable)
 
     subject_parser = subcommands.add_parser("subject")
     add_default_arguments(subject_parser, False)

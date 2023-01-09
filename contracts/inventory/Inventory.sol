@@ -42,15 +42,8 @@ library LibInventory {
         uint256 AdminTerminusPoolId;
         address SubjectERC721Address;
         uint256 NumSlots;
-        // Slot => Slot configuration bitmap
-        // Currently, there are only two admissible configurations:
-        // - 3 means that items can be unequipped from the slot
-        // - 1 means that items cannot be unequipped from the slot
-        // The intention is for these configurations to be a bitmap over all possible settings that can
-        // be configured on a slot.
-        // The first bit (2^0) is always active for created slots.
-        // The 2 bit is active for slots from which items cannot be unequipped.
-        mapping(uint256 => uint256) SlotConfigurations;
+        // Slot => true if items can be unequipped from that slot and false otherwise
+        mapping(uint256 => bool) SlotIsUnequippable;
         // Slot => item type => item address => item pool ID => maximum equippable
         // For ERC20 and ERC721 tokens, item pool ID is assumed to be 0. No data will be stored under positive
         // item pool IDs.
@@ -82,25 +75,6 @@ library LibInventory {
         assembly {
             istore.slot := position
         }
-    }
-
-    function isValidSlotConfiguration(uint256 configuration)
-        internal
-        pure
-        returns (bool)
-    {
-        // Checks that configuration has:
-        // - active 2^0 bit
-        // - no bits higher than the 2^1 bit have been set
-        return configuration & 1 == 1 && configuration <= 3;
-    }
-
-    function isSlotConfigured(uint256 slot) internal view returns (bool) {
-        return inventoryStorage().SlotConfigurations[slot] & 1 == 1;
-    }
-
-    function isSlotUnequippable(uint256 slot) internal view returns (bool) {
-        return (inventoryStorage().SlotConfigurations[slot] >> 1) & 1 == 1;
     }
 }
 
@@ -156,11 +130,7 @@ contract InventoryFacet is
 
     event SubjectDesignated(address indexed subjectAddress);
 
-    event InventorySlotCreated(
-        address indexed creator,
-        uint256 slot,
-        uint256 slotConfiguration
-    );
+    event SlotCreated(address indexed creator, uint256 slot, bool unequippable);
 
     event ItemMarkedAsEquippableInSlot(
         uint256 indexed slot,
@@ -211,22 +181,18 @@ contract InventoryFacet is
         return LibInventory.inventoryStorage().SubjectERC721Address;
     }
 
-    function createSlot(uint256 configuration)
+    function createSlot(bool unequippable)
         external
         onlyAdmin
         returns (uint256)
     {
-        require(
-            LibInventory.isValidSlotConfiguration(configuration),
-            "InventoryFacet.createSlot: Invalid slot configuration"
-        );
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
         uint256 newSlot = istore.NumSlots++;
-        istore.SlotConfigurations[newSlot] = configuration;
+        istore.SlotIsUnequippable[newSlot] = unequippable;
 
-        emit InventorySlotCreated(msg.sender, newSlot, configuration);
+        emit SlotCreated(msg.sender, newSlot, unequippable);
         return newSlot;
     }
 
@@ -234,12 +200,8 @@ contract InventoryFacet is
         return LibInventory.inventoryStorage().NumSlots;
     }
 
-    function getSlotConfiguration(uint256 slot)
-        external
-        view
-        returns (uint256)
-    {
-        return LibInventory.inventoryStorage().SlotConfigurations[slot];
+    function slotIsUnequippable(uint256 slot) external view returns (bool) {
+        return LibInventory.inventoryStorage().SlotIsUnequippable[slot];
     }
 
     function markItemAsEquippableInSlot(

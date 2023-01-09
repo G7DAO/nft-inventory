@@ -107,22 +107,18 @@ class InventorySetupTests(InventoryTestCase):
 
 class TestAdminFlow(InventoryTestCase):
     def test_admin_can_create_nonunequippable_slot(self):
-        slot_configuration = 1
+        unequippable = False
 
         num_slots_0 = self.inventory.num_slots()
-        tx_receipt = self.inventory.create_slot(
-            slot_configuration, {"from": self.admin}
-        )
+        tx_receipt = self.inventory.create_slot(unequippable, {"from": self.admin})
         num_slots_1 = self.inventory.num_slots()
 
         self.assertEqual(num_slots_1, num_slots_0 + 1)
-        self.assertEqual(
-            self.inventory.get_slot_configuration(num_slots_0), slot_configuration
-        )
+        self.assertEqual(self.inventory.slot_is_unequippable(num_slots_0), unequippable)
 
         inventory_slot_created_events = _fetch_events_chunk(
             web3_client,
-            inventory_events.INVENTORY_SLOT_CREATED_ABI,
+            inventory_events.SLOT_CREATED_ABI,
             tx_receipt.block_number,
             tx_receipt.block_number,
         )
@@ -137,27 +133,23 @@ class TestAdminFlow(InventoryTestCase):
             num_slots_0,
         )
         self.assertEqual(
-            inventory_slot_created_events[0]["args"]["slotConfiguration"],
-            slot_configuration,
+            inventory_slot_created_events[0]["args"]["unequippable"],
+            unequippable,
         )
 
     def test_admin_can_create_unequippable_slot(self):
-        slot_configuration = 3
+        unequippable = True
 
         num_slots_0 = self.inventory.num_slots()
-        tx_receipt = self.inventory.create_slot(
-            slot_configuration, {"from": self.admin}
-        )
+        tx_receipt = self.inventory.create_slot(unequippable, {"from": self.admin})
         num_slots_1 = self.inventory.num_slots()
 
         self.assertEqual(num_slots_1, num_slots_0 + 1)
-        self.assertEqual(
-            self.inventory.get_slot_configuration(num_slots_0), slot_configuration
-        )
+        self.assertEqual(self.inventory.slot_is_unequippable(num_slots_0), unequippable)
 
         inventory_slot_created_events = _fetch_events_chunk(
             web3_client,
-            inventory_events.INVENTORY_SLOT_CREATED_ABI,
+            inventory_events.SLOT_CREATED_ABI,
             tx_receipt.block_number,
             tx_receipt.block_number,
         )
@@ -172,26 +164,16 @@ class TestAdminFlow(InventoryTestCase):
             num_slots_0,
         )
         self.assertEqual(
-            inventory_slot_created_events[0]["args"]["slotConfiguration"],
-            slot_configuration,
+            inventory_slot_created_events[0]["args"]["unequippable"],
+            unequippable,
         )
 
-    def test_admin_cannot_create_slot_with_invalid_configuration(self):
-        slot_configuration = 2
-
-        num_slots_0 = self.inventory.num_slots()
-        with self.assertRaises(VirtualMachineError):
-            self.inventory.create_slot(slot_configuration, {"from": self.admin})
-        num_slots_1 = self.inventory.num_slots()
-
-        self.assertEqual(num_slots_1, num_slots_0)
-
     def test_nonadmin_cannot_create_slot(self):
-        slot_configuration = 1
+        unequippable = False
 
         num_slots_0 = self.inventory.num_slots()
         with self.assertRaises(VirtualMachineError):
-            self.inventory.create_slot(slot_configuration, {"from": self.player})
+            self.inventory.create_slot(unequippable, {"from": self.player})
         num_slots_1 = self.inventory.num_slots()
 
         self.assertEqual(num_slots_1, num_slots_0)
@@ -199,8 +181,8 @@ class TestAdminFlow(InventoryTestCase):
     def test_admin_cannot_mark_contracts_with_invalid_type_as_eligible_for_slots(
         self,
     ):
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         invalid_type = 0
@@ -223,8 +205,8 @@ class TestAdminFlow(InventoryTestCase):
         )
 
     def test_admin_can_mark_erc20_tokens_as_eligible_for_slots(self):
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc20_type = 20
@@ -275,8 +257,8 @@ class TestAdminFlow(InventoryTestCase):
         )
 
     def test_nonadmin_cannot_mark_erc20_tokens_as_eligible_for_slots(self):
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc20_type = 20
@@ -301,8 +283,8 @@ class TestAdminFlow(InventoryTestCase):
     def test_admin_cannot_mark_erc20_tokens_as_eligible_for_slots_if_pool_id_is_nonzero(
         self,
     ):
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc20_type = 20
@@ -325,8 +307,8 @@ class TestAdminFlow(InventoryTestCase):
         )
 
     def test_admin_can_mark_erc721_tokens_as_eligible_for_slots(self):
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -377,8 +359,8 @@ class TestAdminFlow(InventoryTestCase):
         )
 
     def test_nonadmin_cannot_mark_erc721_tokens_as_eligible_for_slots(self):
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -403,8 +385,8 @@ class TestAdminFlow(InventoryTestCase):
     def test_admin_cannot_mark_erc721_tokens_as_eligible_for_slots_if_pool_id_is_nonzero(
         self,
     ):
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -429,8 +411,8 @@ class TestAdminFlow(InventoryTestCase):
     def test_admin_cannot_mark_erc721_tokens_as_eligible_for_slots_with_max_amount_greater_than_1(
         self,
     ):
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -455,8 +437,8 @@ class TestAdminFlow(InventoryTestCase):
     def test_admin_can_mark_erc721_tokens_as_eligible_for_slots_with_max_amount_1_then_0(
         self,
     ):
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -525,8 +507,8 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_admin_can_mark_erc1155_tokens_as_eligible_for_slots(self):
         # Testing with non-unequippable slot.
-        slot_configuration = 1
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = False
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc1155_type = 1155
@@ -579,8 +561,8 @@ class TestAdminFlow(InventoryTestCase):
         )
 
     def test_nonadmin_cannot_mark_erc1155_tokens_as_eligible_for_slots(self):
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc1155_type = 1155
@@ -616,8 +598,8 @@ class TestPlayerFlow(InventoryTestCase):
         )
 
         # Create inventory slot
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC20 token as equippable in slot with max amount of 10
@@ -680,8 +662,8 @@ class TestPlayerFlow(InventoryTestCase):
         )
 
         # Create inventory slot
-        slot_configuration = 3
-        self.inventory.create_slot(slot_configuration, {"from": self.admin})
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC20 token as equippable in slot with max amount of 10
