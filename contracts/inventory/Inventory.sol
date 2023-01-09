@@ -327,7 +327,14 @@ contract InventoryFacet is
                 erc20TransferSuccess,
                 "InventoryFacet.equip: Error equipping ERC20 item - transfer was unsuccessful"
             );
-        } else if (itemType == LibInventory.ERC721_ITEM_TYPE) {}
+        } else if (itemType == LibInventory.ERC721_ITEM_TYPE) {
+            IERC721 erc721Contract = IERC721(itemAddress);
+            erc721Contract.safeTransferFrom(
+                msg.sender,
+                address(this),
+                itemTokenId
+            );
+        }
 
         emit ItemEquipped(
             subjectTokenId,
