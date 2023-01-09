@@ -27,7 +27,6 @@ library LibInventory {
     uint256 constant ERC20_ITEM_TYPE = 20;
     uint256 constant ERC721_ITEM_TYPE = 721;
     uint256 constant ERC1155_ITEM_TYPE = 1155;
-    uint256 constant UNEQUIP_ITEM_TYPE = 0;
 
     // EquippedItem represents an item equipped in a specific inventory slot for a specific ERC721 token.
     struct EquippedItem {
@@ -123,6 +122,16 @@ contract InventoryFacet is
         _;
     }
 
+    modifier requireValidItemType(uint256 itemType) {
+        require(
+            itemType == LibInventory.ERC20_ITEM_TYPE ||
+                itemType == LibInventory.ERC721_ITEM_TYPE ||
+                itemType == LibInventory.ERC1155_ITEM_TYPE,
+            "InventoryFacet.requireValidItemType: Invalid item type"
+        );
+        _;
+    }
+
     event AdministratorDesignated(
         address indexed adminTerminusAddress,
         uint256 indexed adminTerminusPoolId
@@ -210,16 +219,10 @@ contract InventoryFacet is
         address itemAddress,
         uint256 itemPoolId,
         uint256 maxAmount
-    ) external onlyAdmin {
+    ) external onlyAdmin requireValidItemType(itemType) {
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
-        require(
-            itemType == LibInventory.ERC20_ITEM_TYPE ||
-                itemType == LibInventory.ERC721_ITEM_TYPE ||
-                itemType == LibInventory.ERC1155_ITEM_TYPE,
-            "InventoryFacet.markItemAsEquippableInSlot: Invalid item type"
-        );
         require(
             itemType == LibInventory.ERC1155_ITEM_TYPE || itemPoolId == 0,
             "InventoryFacet.markItemAsEquippableInSlot: Pool ID can only be non-zero for items from ERC1155 contracts"
@@ -266,14 +269,7 @@ contract InventoryFacet is
         address itemAddress,
         uint256 itemTokenId,
         uint256 amount
-    ) external diamondNonReentrant {
-        require(
-            itemType == LibInventory.ERC20_ITEM_TYPE ||
-                itemType == LibInventory.ERC721_ITEM_TYPE ||
-                itemType == LibInventory.ERC1155_ITEM_TYPE ||
-                itemType == LibInventory.UNEQUIP_ITEM_TYPE,
-            "InventoryFacet.equip: Invalid item type"
-        );
+    ) external requireValidItemType(itemType) diamondNonReentrant {
         require(
             itemType == LibInventory.ERC721_ITEM_TYPE ||
                 itemType == LibInventory.ERC1155_ITEM_TYPE ||
@@ -285,10 +281,6 @@ contract InventoryFacet is
                 itemType == LibInventory.ERC1155_ITEM_TYPE ||
                 amount <= 1,
             "InventoryFacet.equip: amount can exceed 1 only for ERC20 and ERC1155 items"
-        );
-        require(
-            itemType != LibInventory.UNEQUIP_ITEM_TYPE || amount == 0,
-            "InventoryFacet.equip: amout should be 0 if you are unequipping an item"
         );
 
         LibInventory.InventoryStorage storage istore = LibInventory
