@@ -309,11 +309,9 @@ contract InventoryFacet is
         // TODO(zomglings): When we support reupping items, we will need to modify the amount in the check
         // below to amount + existingItem.amount.
         require(
-            itemType == LibInventory.UNEQUIP_ITEM_TYPE ||
-                istore.SlotEligibleItems[slot][itemType][itemAddress][
-                    itemTokenId
-                ] >=
-                amount,
+            istore.SlotEligibleItems[slot][itemType][itemAddress][
+                itemTokenId
+            ] >= amount,
             "InventoryFacet.equip: You can not equip those many instances of that item into the given slot"
         );
 
