@@ -385,22 +385,18 @@ contract InventoryFacet is
             "InventoryFacet.equip: Message sender is not owner of subject token"
         );
 
-        LibInventory.EquippedItem memory existingItem = istore.EquippedItems[
-            istore.SubjectERC721Address
-        ][subjectTokenId][slot];
+        // TODO(zomglings): Although this does the job, it is not gas-efficient if the caller is
+        // increasing the amount of an existing token in the given slot. To increase gas-efficiency,
+        // we could add more complex logic here to handle that situation by only equipping the difference
+        // between the existing amount of the token and the target amount.
+        if (
+            istore
+            .EquippedItems[istore.SubjectERC721Address][subjectTokenId][slot]
+                .ItemType != 0
+        ) {
+            _unequip(subjectTokenId, slot, true, 0);
+        }
 
-        // TODO(zomglings): To set things up, we will only test equipping workflow. To make it
-        // so that tokens cannot be unequipped, we require that the existingItem.ItemType be zero.
-        // We will turn this off when we add support for unequipping items from unequippable slots
-        // and when we want to add support for reupping items of the same already equipped type into
-        // a slot.
-        require(
-            existingItem.ItemType == 0,
-            "InventoryFacet.equip: This is a temporary restriction that no item can already be equipped in the given slot"
-        );
-
-        // TODO(zomglings): When we support reupping items, we will need to modify the amount in the check
-        // below to amount + existingItem.amount.
         require(
             // Note the if statement when accessing the itemPoolId key in the SlotEligibleItems mapping.
             // That field is only relevant for ERC1155 tokens. For ERC20 and ERC721 tokens, the capacity
@@ -413,7 +409,6 @@ contract InventoryFacet is
             "InventoryFacet.equip: You can not equip those many instances of that item into the given slot"
         );
 
-        // TODO(zomglings): Add case here when we need to support unequipping.
         if (itemType == LibInventory.ERC20_ITEM_TYPE) {
             IERC20 erc20Contract = IERC20(itemAddress);
             bool erc20TransferSuccess = erc20Contract.transferFrom(
