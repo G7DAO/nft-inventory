@@ -151,11 +151,22 @@ contract InventoryFacet is
 
     event ItemEquipped(
         uint256 indexed subjectTokenId,
-        uint256 indexed itemType,
+        uint256 indexed slot,
+        uint256 itemType,
         address indexed itemAddress,
         uint256 itemTokenId,
         uint256 amount,
         address equippedBy
+    );
+
+    event ItemUnequipped(
+        uint256 indexed subjectTokenId,
+        uint256 indexed slot,
+        uint256 itemType,
+        address indexed itemAddress,
+        uint256 itemTokenId,
+        uint256 amount,
+        address unequippedBy
     );
 
     /**
@@ -198,7 +209,9 @@ contract InventoryFacet is
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
-        uint256 newSlot = istore.NumSlots++;
+        // Slots are 1-indexed!
+        istore.NumSlots += 1;
+        uint256 newSlot = istore.NumSlots;
         istore.SlotIsUnequippable[newSlot] = unequippable;
 
         emit SlotCreated(msg.sender, newSlot, unequippable);
@@ -260,6 +273,72 @@ contract InventoryFacet is
             LibInventory.inventoryStorage().SlotEligibleItems[slot][itemType][
                 itemAddress
             ][itemPoolId];
+    }
+
+    function _unequip(
+        uint256 subjectTokenId,
+        uint256 slot,
+        bool unequipAll,
+        uint256 amount
+    ) internal {
+        require(
+            !unequipAll || amount == 0,
+            "InventoryFacet._unequip: Set amount to 0 if you are unequipping all instances of the item in that slot"
+        );
+
+        require(
+            unequipAll || amount > 0,
+            "InventoryFacet._unequip: Since you are not unequipping all instances of the item in that slot, you must specify how many instances you want to unequip"
+        );
+
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        require(
+            istore.SlotIsUnequippable[slot],
+            "InventoryFacet._unequip: That slot is not unequippable"
+        );
+
+        LibInventory.EquippedItem storage existingItem = istore.EquippedItems[
+            istore.SubjectERC721Address
+        ][subjectTokenId][slot];
+
+        if (unequipAll) {
+            amount = existingItem.Amount;
+        }
+
+        require(
+            amount <= existingItem.Amount,
+            "InventoryFacet._unequip: Attempting to unequip too many items from the slot"
+        );
+
+        if (existingItem.ItemType == 20) {
+            IERC20 erc20Contract = IERC20(existingItem.ItemAddress);
+            bool transferSuccess = erc20Contract.transfer(msg.sender, amount);
+            require(
+                transferSuccess,
+                "InventoryFacet._unequip: Error unequipping ERC20 item - transfer was unsuccessful"
+            );
+        } else if (existingItem.ItemType == 721) {} else if (
+            existingItem.ItemType == 1155
+        ) {}
+
+        emit ItemUnequipped(
+            subjectTokenId,
+            slot,
+            existingItem.ItemType,
+            existingItem.ItemAddress,
+            existingItem.ItemTokenId,
+            amount,
+            msg.sender
+        );
+
+        existingItem.Amount -= amount;
+        if (existingItem.Amount == 0) {
+            delete istore.EquippedItems[istore.SubjectERC721Address][
+                subjectTokenId
+            ][slot];
+        }
     }
 
     function equip(
@@ -355,6 +434,7 @@ contract InventoryFacet is
 
         emit ItemEquipped(
             subjectTokenId,
+            slot,
             itemType,
             itemAddress,
             itemTokenId,
@@ -370,6 +450,24 @@ contract InventoryFacet is
             ItemTokenId: itemTokenId,
             Amount: amount
         });
+    }
+
+    function unequip(
+        uint256 subjectTokenId,
+        uint256 slot,
+        bool unequipAll,
+        uint256 amount
+    ) external diamondNonReentrant {
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        IERC721 subjectContract = IERC721(istore.SubjectERC721Address);
+        require(
+            msg.sender == subjectContract.ownerOf(subjectTokenId),
+            "InventoryFacet.equip: Message sender is not owner of subject token"
+        );
+
+        _unequip(subjectTokenId, slot, unequipAll, amount);
     }
 
     function equipped(uint256 subjectTokenId, uint256 slot)

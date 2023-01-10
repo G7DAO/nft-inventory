@@ -245,6 +245,19 @@ class InventoryFacet:
             interface_id, block_identifier=block_number
         )
 
+    def unequip(
+        self,
+        subject_token_id: int,
+        slot: int,
+        unequip_all: bool,
+        amount: int,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.unequip(
+            subject_token_id, slot, unequip_all, amount, transaction_config
+        )
+
 
 def get_transaction_config(args: argparse.Namespace) -> Dict[str, Any]:
     signer = network.accounts.load(args.sender, args.password)
@@ -505,6 +518,22 @@ def handle_supports_interface(args: argparse.Namespace) -> None:
     print(result)
 
 
+def handle_unequip(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.unequip(
+        subject_token_id=args.subject_token_id,
+        slot=args.slot,
+        unequip_all=args.unequip_all,
+        amount=args.amount,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
 def generate_cli() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="CLI for InventoryFacet")
     parser.set_defaults(func=lambda _: parser.print_help())
@@ -686,6 +715,20 @@ def generate_cli() -> argparse.ArgumentParser:
         "--interface-id", required=True, help="Type: bytes4", type=bytes_argument_type
     )
     supports_interface_parser.set_defaults(func=handle_supports_interface)
+
+    unequip_parser = subcommands.add_parser("unequip")
+    add_default_arguments(unequip_parser, True)
+    unequip_parser.add_argument(
+        "--subject-token-id", required=True, help="Type: uint256", type=int
+    )
+    unequip_parser.add_argument("--slot", required=True, help="Type: uint256", type=int)
+    unequip_parser.add_argument(
+        "--unequip-all", required=True, help="Type: bool", type=boolean_argument_type
+    )
+    unequip_parser.add_argument(
+        "--amount", required=True, help="Type: uint256", type=int
+    )
+    unequip_parser.set_defaults(func=handle_unequip)
 
     return parser
 

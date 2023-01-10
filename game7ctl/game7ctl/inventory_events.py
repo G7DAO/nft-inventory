@@ -100,8 +100,9 @@ ITEM_EQUIPPED_ABI = {
             "name": "subjectTokenId",
             "type": "uint256",
         },
+        {"indexed": True, "internalType": "uint256", "name": "slot", "type": "uint256"},
         {
-            "indexed": True,
+            "indexed": False,
             "internalType": "uint256",
             "name": "itemType",
             "type": "uint256",
@@ -132,5 +133,50 @@ ITEM_EQUIPPED_ABI = {
         },
     ],
     "name": "ItemEquipped",
+    "type": "event",
+}
+
+ITEM_UNEQUIPPED_ABI = {
+    "anonymous": False,
+    "inputs": [
+        {
+            "indexed": True,
+            "internalType": "uint256",
+            "name": "subjectTokenId",
+            "type": "uint256",
+        },
+        {"indexed": True, "internalType": "uint256", "name": "slot", "type": "uint256"},
+        {
+            "indexed": False,
+            "internalType": "uint256",
+            "name": "itemType",
+            "type": "uint256",
+        },
+        {
+            "indexed": True,
+            "internalType": "address",
+            "name": "itemAddress",
+            "type": "address",
+        },
+        {
+            "indexed": False,
+            "internalType": "uint256",
+            "name": "itemTokenId",
+            "type": "uint256",
+        },
+        {
+            "indexed": False,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256",
+        },
+        {
+            "indexed": False,
+            "internalType": "address",
+            "name": "unequippedBy",
+            "type": "address",
+        },
+    ],
+    "name": "ItemUnequipped",
     "type": "event",
 }
