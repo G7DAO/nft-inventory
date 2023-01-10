@@ -319,9 +319,23 @@ contract InventoryFacet is
                 transferSuccess,
                 "InventoryFacet._unequip: Error unequipping ERC20 item - transfer was unsuccessful"
             );
-        } else if (existingItem.ItemType == 721) {} else if (
-            existingItem.ItemType == 1155
-        ) {}
+        } else if (existingItem.ItemType == 721 && amount > 0) {
+            IERC721 erc721Contract = IERC721(existingItem.ItemAddress);
+            erc721Contract.safeTransferFrom(
+                address(this),
+                msg.sender,
+                existingItem.ItemTokenId
+            );
+        } else if (existingItem.ItemType == 1155) {
+            IERC1155 erc1155Contract = IERC1155(existingItem.ItemAddress);
+            erc1155Contract.safeTransferFrom(
+                address(this),
+                msg.sender,
+                existingItem.ItemTokenId,
+                existingItem.Amount,
+                ""
+            );
+        }
 
         emit ItemUnequipped(
             subjectTokenId,
@@ -388,8 +402,13 @@ contract InventoryFacet is
         // TODO(zomglings): When we support reupping items, we will need to modify the amount in the check
         // below to amount + existingItem.amount.
         require(
+            // Note the if statement when accessing the itemPoolId key in the SlotEligibleItems mapping.
+            // That field is only relevant for ERC1155 tokens. For ERC20 and ERC721 tokens, the capacity
+            // is set under the 0 key in that position.
+            // Using itemTokenId as the key in that position would incorrectly yield a value of 0 for
+            // ERC721 tokens.
             istore.SlotEligibleItems[slot][itemType][itemAddress][
-                itemTokenId
+                itemType == 1155 ? itemTokenId : 0
             ] >= amount,
             "InventoryFacet.equip: You can not equip those many instances of that item into the given slot"
         );
