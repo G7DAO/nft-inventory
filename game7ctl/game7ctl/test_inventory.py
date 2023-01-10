@@ -1090,3 +1090,96 @@ class TestPlayerFlow(InventoryTestCase):
             item_unequipped_events[0]["args"]["unequippedBy"],
             self.player.address,
         )
+
+    def test_player_can_unequip_some_but_not_all_erc20_items_in_slot_on_their_subject_tokens(
+        self,
+    ):
+        # Mint tokens to player and set approvals
+        subject_token_id = self.nft.total_supply()
+        self.nft.mint(self.player.address, subject_token_id, {"from": self.owner})
+        self.payment_token.mint(self.player.address, 1000, {"from": self.owner})
+        self.payment_token.approve(
+            self.inventory.address, MAX_UINT, {"from": self.player}
+        )
+
+        # Create inventory slot
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
+        slot = self.inventory.num_slots()
+        self.assertTrue(self.inventory.slot_is_unequippable(slot))
+
+        # Set ERC20 token as equippable in slot with max amount of 10
+        self.inventory.mark_item_as_equippable_in_slot(
+            slot, 20, self.payment_token.address, 0, 10, {"from": self.admin}
+        )
+
+        player_balance_0 = self.payment_token.balance_of(self.player.address)
+        inventory_balance_0 = self.payment_token.balance_of(self.inventory.address)
+
+        equipped_item_0 = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
+
+        self.inventory.equip(
+            subject_token_id,
+            slot,
+            20,
+            self.payment_token.address,
+            0,
+            2,
+            {"from": self.player},
+        )
+
+        player_balance_1 = self.payment_token.balance_of(self.player.address)
+        inventory_balance_1 = self.payment_token.balance_of(self.inventory.address)
+
+        self.assertEqual(player_balance_1, player_balance_0 - 2)
+        self.assertEqual(inventory_balance_1, inventory_balance_0 + 2)
+
+        equipped_item_1 = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(equipped_item_1, (20, self.payment_token.address, 0, 2))
+
+        tx_receipt = self.inventory.unequip(
+            subject_token_id, slot, False, 1, {"from": self.player}
+        )
+
+        player_balance_2 = self.payment_token.balance_of(self.player.address)
+        inventory_balance_2 = self.payment_token.balance_of(self.inventory.address)
+
+        self.assertEqual(player_balance_2, player_balance_1 + 1)
+        self.assertEqual(inventory_balance_2, inventory_balance_1 - 1)
+
+        equipped_item_2 = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(equipped_item_2, (20, self.payment_token.address, 0, 1))
+
+        item_unequipped_events = _fetch_events_chunk(
+            web3_client,
+            inventory_events.ITEM_UNEQUIPPED_ABI,
+            from_block=tx_receipt.block_number,
+            to_block=tx_receipt.block_number,
+        )
+        self.assertEqual(len(item_unequipped_events), 1)
+
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["subjectTokenId"], subject_token_id
+        )
+        self.assertEqual(item_unequipped_events[0]["args"]["slot"], slot)
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["itemType"],
+            20,
+        )
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["itemAddress"],
+            self.payment_token.address,
+        )
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["itemTokenId"],
+            0,
+        )
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["amount"],
+            1,
+        )
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["unequippedBy"],
+            self.player.address,
+        )
