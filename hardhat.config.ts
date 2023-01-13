@@ -1,7 +1,6 @@
 /* eslint-disable node/no-unpublished-import */
 import { config as dotEnvConfig } from "dotenv";
 import { HardhatUserConfig, task } from "hardhat/config";
-import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";

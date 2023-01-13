@@ -104,6 +104,8 @@ Batch endpoints:
 - [ ] Equipping items
 - [ ] Unequipping items
  */
+
+
 contract InventoryFacet is
     ERC721Holder,
     ERC1155Holder,
