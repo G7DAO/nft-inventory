@@ -8,6 +8,7 @@ specifiers:
   '@nomiclabs/hardhat-ethers': ^2.2.2
   '@nomiclabs/hardhat-etherscan': ^3.1.5
   '@nomiclabs/hardhat-waffle': ^2.0.3
+  '@openzeppelin/contracts': ^4.8.0
   '@tenderly/hardhat-tenderly': ^1.5.1
   '@typechain/ethers-v5': ^10.2.0
   '@typechain/hardhat': ^6.1.5
@@ -47,6 +48,7 @@ specifiers:
   typescript: ^4.9.4
 
 dependencies:
+  '@openzeppelin/contracts': 4.8.0
   dotenv: 16.0.3
   hardhat: 2.12.6_z6wznmtyb6ovnulj6iujpct7um
 
@@ -958,6 +960,10 @@ packages:
       ethers: 5.7.2
       hardhat: 2.12.6_z6wznmtyb6ovnulj6iujpct7um
     dev: true
+
+  /@openzeppelin/contracts/4.8.0:
+    resolution: {integrity: sha512-AGuwhRRL+NaKx73WKRNzeCxOCOCxpaqF+kp8TJ89QzAipSwZy/NoflkWaL9bywXFRhIzXt8j38sfF7KBKCPWLw==}
+    dev: false
 
   /@resolver-engine/core/0.3.3:
     resolution: {integrity: sha512-eB8nEbKDJJBi5p5SrvrvILn4a0h42bKtbCTri3ZxCGt6UvoQyp7HnGOfki944bUjBSHKK3RvgfViHn+kqdXtnQ==}

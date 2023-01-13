@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.17;
 
 // Adapted from the Diamond 3 reference implementation by Nick Mudge:
 // https://github.com/mudgen/diamond-3-hardhat

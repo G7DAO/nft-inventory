@@ -1,3 +1,3 @@
 module.exports = {
-    istanbulReporter: ['html', 'lcov', 'json-summary'],
+  istanbulReporter: ["html", "lcov", "json-summary"],
 };

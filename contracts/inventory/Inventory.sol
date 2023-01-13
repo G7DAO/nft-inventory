@@ -5,21 +5,23 @@
  * GitHub: https://github.com/G7DAO/contracts
  */
 
-pragma solidity ^0.8.0;
+pragma solidity 0.8.17;
 
 import {TerminusPermissions} from "@moonstream/contracts/terminus/TerminusPermissions.sol";
 import {DiamondReentrancyGuard} from "@moonstream-engine/contracts/diamond/security/DiamondReentrancyGuard.sol";
-import "@openzeppelin-contracts/contracts/token/ERC1155/utils/ERC1155Holder.sol";
-import "@openzeppelin-contracts/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "@openzeppelin-contracts/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "../diamond/libraries/LibDiamond.sol";
 
 /**
 LibInventory defines the storage structure used by the Inventory contract as a facet for an EIP-2535 Diamond
 proxy.
  */
+
+
 library LibInventory {
     bytes32 constant STORAGE_POSITION =
         keccak256("g7dao.eth.storage.Inventory");
@@ -37,19 +39,19 @@ library LibInventory {
     }
 
     struct InventoryStorage {
-        address AdminTerminusAddress;
-        uint256 AdminTerminusPoolId;
-        address SubjectERC721Address;
+        address adminTerminusAddress;
+        uint256 adminTerminusPoolId;
+        address subjectERC721Address;
         uint256 NumSlots;
         // Slot => true if items can be unequipped from that slot and false otherwise
-        mapping(uint256 => bool) SlotIsUnequippable;
+        mapping(uint256 => bool) slotIsUnequippable;
         // Slot => item type => item address => item pool ID => maximum equippable
         // For ERC20 and ERC721 tokens, item pool ID is assumed to be 0. No data will be stored under positive
         // item pool IDs.
         //
         // NOTE: It is possible for the same contract to implement multiple of these ERCs (e.g. ERC20 and ERC721),
         // so this data structure actually makes sense.
-        mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) SlotEligibleItems;
+        mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) slotEligibleItems;
         // Subject contract address => subject token ID => slot => EquippedItem
         // Item type and Pool ID on EquippedItem have the same constraints as they do elsewhere (e.g. in SlotEligibleItems).
         //
@@ -62,7 +64,7 @@ library LibInventory {
         // do whatever they want in any case, but adding the subject contract address as a key protects
         // users of non-Diamond deployments even under small variants of the current implementation.
         // It also offers *some* protection to users of Diamond deployments of the Inventory.
-        mapping(address => mapping(uint256 => mapping(uint256 => EquippedItem))) EquippedItems;
+        mapping(address => mapping(uint256 => mapping(uint256 => EquippedItem))) equippedItems;
     }
 
     function inventoryStorage()
