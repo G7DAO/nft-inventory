@@ -1,0 +1,13 @@
+artifacts
+cache
+coverage
+docs
+node_modules
+soldata
+typechain-types
+build
+game7ctl
+.game7
+
+coverage*
+tags*

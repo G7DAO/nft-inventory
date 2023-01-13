@@ -1,0 +1,4 @@
+{
+    "solc_remaps": ["@openzeppelin/=node_modules/@openzeppelin/", "hardhat/=node_modules/hardhat/"],
+    "filter_paths": "node_modules"
+}

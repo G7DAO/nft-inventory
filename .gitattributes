@@ -1,2 +1,4 @@
 *.sol linguist-language=Solidity
 *.vy linguist-language=Python
+*.ts linguist-language=Typescript
+*.js linguist-language=Javascript
