@@ -8,13 +8,13 @@ Main repo for Game7 contracts
 
 First, set up a Python3 environment:
 
-- Check if you have Python3 installed on your system: `python3 --version`.
-- If the above command errors out, you need to install Python3. You can find instructions for how to
-do this at https://python.org.
-- Create a Python virtual environment in the root of this directory: `python3 -m venv .game7`
-- Activate the virtual environment: `source .game7/bin/activate` (when you are finished working in this
-code base, you can deactivate the virtual environment using the `deactivate` command).
-- Install the `game7ctl` package: `pip install -e game7ctl/`
+-   Check if you have Python3 installed on your system: `python3 --version`.
+-   If the above command errors out, you need to install Python3. You can find instructions for how to
+    do this at https://python.org.
+-   Create a Python virtual environment in the root of this directory: `python3 -m venv .game7`
+-   Activate the virtual environment: `source .game7/bin/activate` (when you are finished working in this
+    code base, you can deactivate the virtual environment using the `deactivate` command).
+-   Install the `game7ctl` package: `pip install -e game7ctl/`
 
 Following these steps will make the `game7ctl` command available in your shell. You can use this command-line
 tool to deploy and interact with the smart contracts in this repository. For more details:
@@ -31,7 +31,7 @@ To compile the smart contracts using `brownie`, run the following command from t
 brownie compile
 ```
 
-To set up a *development* environment, you have to also install the developer dependencies using:
+To set up a _development_ environment, you have to also install the developer dependencies using:
 
 ```
 pip install -e "game7ctl/[dev]"
@@ -56,20 +56,20 @@ For example, after modifying `InventoryFacet`, you would run:
 moonworm generate-brownie -p . -o game7ctl/game7ctl -n InventoryFacet
 ```
 
-- - -
+---
 
 ## Deploying contracts
 
 ### `game7ctl`
 
 Once you have set up `game7ctl`, you can use it to deploy the contracts in this repository. For example,
-to deploy the Inventory contract as a Diamond proxy, you would use the `game7ctl core inventory-gogogo` command.
+to deploy the Inventory contract as a Diamond proxy, you would use the `game7ctl core inventory-facet-deploy` command.
 
 To see all the parameters you can pass in the deployment, run:
 
 ```
-$ game7ctl core inventory-gogogo --help
-usage: game7ctl inventory-gogogo [-h] --network NETWORK [--address ADDRESS] --sender SENDER [--password PASSWORD] [--gas-price GAS_PRICE] [--max-fee-per-gas MAX_FEE_PER_GAS]
+$ game7ctl core inventory-facet-deploy --help
+usage: game7ctl inventory-facet-deploy [-h] --network NETWORK [--address ADDRESS] --sender SENDER [--password PASSWORD] [--gas-price GAS_PRICE] [--max-fee-per-gas MAX_FEE_PER_GAS]
                                  [--max-priority-fee-per-gas MAX_PRIORITY_FEE_PER_GAS] [--confirmations CONFIRMATIONS] [--nonce NONCE] [--value VALUE] [--verbose] --admin-terminus-address
                                  ADMIN_TERMINUS_ADDRESS --admin-terminus-pool-id ADMIN_TERMINUS_POOL_ID --subject-erc721-address SUBJECT_ERC721_ADDRESS
                                  [--diamond-cut-address DIAMOND_CUT_ADDRESS] [--diamond-address DIAMOND_ADDRESS] [--diamond-loupe-address DIAMOND_LOUPE_ADDRESS]
@@ -129,7 +129,7 @@ brownie networks add Polygon $NETWORK_NAME host=$JSONRPC_URL chainid=137 explore
 
 The only keys which are not optional are `chainid` and `host`.
 
-Then, you could pass `--network $NETWORK_NAME` as an argument to `game7ctl core inventory-gogogo`.
+Then, you could pass `--network $NETWORK_NAME` as an argument to `game7ctl core inventory-facet-deploy`.
 
 ##### `--sender`
 
@@ -147,3 +147,14 @@ Then you can pass `--sender $ACCOUNT_NAME` to `game7ctl`.
 The preferred way of using `--sender` is still by passing a keystore file.
 
 `brownie` will always prompt you to unlock the account with a password.
+
+##### Deployment Example:
+
+If you follow all the explanations above, you should be able to deploy the Inventory contract as a Diamond proxy
+
+Using a command like this:
+
+```
+game7ctl core inventory-gogogo --network <NETWORK> --admin-terminus-address <TERMINUS_ADMIN_ADDRESS> --admin-terminus-pool-id <POOL_ID> --sender <BROWNIE_ACCOUNT/KEYSTORE FILE PATH> --subject-erc721-address <ERC_721_CONTRACT_ADDRESS>
+```
+
