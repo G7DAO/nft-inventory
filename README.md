@@ -63,13 +63,13 @@ moonworm generate-brownie -p . -o game7ctl/game7ctl -n InventoryFacet
 ### `game7ctl`
 
 Once you have set up `game7ctl`, you can use it to deploy the contracts in this repository. For example,
-to deploy the Inventory contract as a Diamond proxy, you would use the `game7ctl core inventory-facet-deploy` command.
+to deploy the Inventory contract as a Diamond proxy, you would use the `game7ctl core inventory-gogogo` command.
 
 To see all the parameters you can pass in the deployment, run:
 
 ```
-$ game7ctl core inventory-facet-deploy --help
-usage: game7ctl inventory-facet-deploy [-h] --network NETWORK [--address ADDRESS] --sender SENDER [--password PASSWORD] [--gas-price GAS_PRICE] [--max-fee-per-gas MAX_FEE_PER_GAS]
+$ game7ctl core inventory-gogogo --help
+usage: game7ctl inventory-gogogo [-h] --network NETWORK [--address ADDRESS] --sender SENDER [--password PASSWORD] [--gas-price GAS_PRICE] [--max-fee-per-gas MAX_FEE_PER_GAS]
                                  [--max-priority-fee-per-gas MAX_PRIORITY_FEE_PER_GAS] [--confirmations CONFIRMATIONS] [--nonce NONCE] [--value VALUE] [--verbose] --admin-terminus-address
                                  ADMIN_TERMINUS_ADDRESS --admin-terminus-pool-id ADMIN_TERMINUS_POOL_ID --subject-erc721-address SUBJECT_ERC721_ADDRESS
                                  [--diamond-cut-address DIAMOND_CUT_ADDRESS] [--diamond-address DIAMOND_ADDRESS] [--diamond-loupe-address DIAMOND_LOUPE_ADDRESS]
