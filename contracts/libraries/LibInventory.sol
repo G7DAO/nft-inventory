@@ -13,6 +13,27 @@ library LibInventory {
     uint256 constant ERC721_ITEM_TYPE = 721;
     uint256 constant ERC1155_ITEM_TYPE = 1155;
 
+    // Returns uint
+    // Clothes  - 0
+    // Accesories  - 1
+    // Materials - 2
+    // Badges - 3
+    // Trophies - 4
+    enum SlotType { 
+        Clothes,
+        Accesories,
+        Materials,
+        Badges,
+        Trophies
+    }
+
+    struct Slot {
+        string SlotURI;
+        SlotType slotType;
+        bool SlotIsUnequippable;
+        uint256 SlotId;
+    }
+
     // EquippedItem represents an item equipped in a specific inventory slot for a specific ERC721 token.
     struct EquippedItem {
         uint256 ItemType;
@@ -24,10 +45,17 @@ library LibInventory {
     struct InventoryStorage {
         address AdminTerminusAddress;
         uint256 AdminTerminusPoolId;
-        address SubjectERC721Address;
+        address ContractERC721Address;
         uint256 NumSlots;
+
+        // TODO: @ogarciarevett remove this, is already in the Slot struct
         // Slot => true if items can be unequipped from that slot and false otherwise
         mapping(uint256 => bool) SlotIsUnequippable;
+
+        // SlotId => slot, useful to get the rest of the slot data.
+        mapping(uint256 => Slot) SlotData;
+
+
         // Slot => item type => item address => item pool ID => maximum equippable
         // For ERC20 and ERC721 tokens, item pool ID is assumed to be 0. No data will be stored under positive
         // item pool IDs.
@@ -35,6 +63,7 @@ library LibInventory {
         // NOTE: It is possible for the same contract to implement multiple of these ERCs (e.g. ERC20 and ERC721),
         // so this data structure actually makes sense.
         mapping(uint256 => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) SlotEligibleItems;
+
         // Subject contract address => subject token ID => slot => EquippedItem
         // Item type and Pool ID on EquippedItem have the same constraints as they do elsewhere (e.g. in SlotEligibleItems).
         //
@@ -47,11 +76,16 @@ library LibInventory {
         // do whatever they want in any case, but adding the subject contract address as a key protects
         // users of non-Diamond deployments even under small variants of the current implementation.
         // It also offers *some* protection to users of Diamond deployments of the Inventory.
-        // ERC721 => 
-            // subjectTokenId => 
-                            // slotId => 
-                                        // EquippedItem struct
+        // ERC721 Contract Address => 
+                        // subjectTokenId => 
+                                             // slotId => 
+                                                                // EquippedItem struct
         mapping(address => mapping(uint256 => mapping(uint256 => EquippedItem))) EquippedItems;
+
+        // ERC721 Contract Address => 
+                          // subjectTokenId => 
+                                             // slots
+        mapping(address => mapping(uint256 => Slot[])) SubjectSlots;
     }
 
     function inventoryStorage()

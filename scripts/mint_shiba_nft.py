@@ -6,8 +6,7 @@ def main():
     dev = accounts.load('deployment_account')
     print(network.show_active())
     shiba_nft = ShibaERC721[len(ShibaERC721) - 1]
-    shiba_nft.tokenCounter()
-    transaction = shiba_nft.safeMint("0xa2F5785506b0344abFD15EEFc4BDe21D4cD3125b", "https://gateway.pinata.cloud/ipfs/QmTVkd2oDF5Wnf8ZTntvyU5izfjbfvLPbnWDtjsAvfY1y3", {"from": dev})
+    transaction = shiba_nft.safeMint("ADDRESS_HERE", "URI_HERE", {"from": dev})
     transaction.wait(1)
-    # show the nft on polygon mumbai scan
+    # show the nft on polygon mumbai scan, var env $POLYGONSCAN_TOKEN required
     print("https://mumbai.polygonscan.com/tx/" + transaction.txid)

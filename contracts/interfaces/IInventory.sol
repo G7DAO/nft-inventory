@@ -11,7 +11,7 @@ interface IInventory {
         uint256 indexed adminTerminusPoolId
     );
 
-    event SubjectDesignated(address indexed subjectAddress);
+    event ContractAddressDesignated(address indexed contractAddress);
 
     event SlotCreated(address indexed creator, uint256 slot, bool unequippable);
 
@@ -22,6 +22,10 @@ interface IInventory {
         uint256 itemPoolId,
         uint256 maxAmount
     );
+
+    event AssignSlotToSubjectTokenId(uint indexed toSubjectTokenId, uint256 indexed slotId);
+
+    event NewSlotURI(uint indexed slotId);
 
     event ItemEquipped(
         uint256 indexed subjectTokenId,
@@ -53,12 +57,12 @@ interface IInventory {
 
     function subject() external view returns (address);
 
-    function createSlot(bool unequippable)
+    function createSlot(bool unequippable, uint256 slotType, string memory slotURI)
         external returns (uint256);
 
     function numSlots() external view returns (uint256);
 
-    function slotIsUnequippable(uint256 slot) external view returns (bool);
+    function slotIsUnequippable(uint256 slotId) external view returns (bool);
 
     function markItemAsEquippableInSlot(
         uint256 slot,
@@ -91,8 +95,22 @@ interface IInventory {
         uint256 amount
     ) external;
 
-    function equipped(uint256 subjectTokenId, uint256 slot)
+    function getEquippedItems(uint256 subjectTokenId, uint256 slot)
         external
         view
         returns (LibInventory.EquippedItem memory item);
+
+    function getSlotById(uint256 subjectTokenId, uint slotId)
+        external
+        view
+        returns (LibInventory.Slot memory slots);
+
+    function getSubjectTokenSlots(uint256 subjectTokenId)
+        external
+        view
+        returns(LibInventory.Slot[] memory slot);
+    
+    function assignSlotToSubjectTokenId(uint256 toSubjectTokenId, uint256 slotId) external;
+
+    function getSlotURI(uint256 slotId) external view returns (string memory);
 }

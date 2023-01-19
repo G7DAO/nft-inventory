@@ -64,6 +64,18 @@ contract InventoryFacet is
         _;
     }
 
+    // TODO: @ogarciarevett finish this
+    // modifier onlySlotOwner(uint256 slotId) {
+    //     // LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
+
+    //     // // TODO: @ogarciarevett check if asking for the msg.sender will be required, if the user change the wallet could loose this relation
+    //     // istore.SubjectSlots[msg.sender]
+
+    //     // require(msg.sender);
+
+    //     _;
+    // }
+
     modifier requireValidItemType(uint256 itemType) {
         require(
             itemType == LibInventory.ERC20_ITEM_TYPE ||
@@ -78,22 +90,22 @@ contract InventoryFacet is
     An Inventory must be initialized with:
     1. adminTerminusAddress: The address for the Terminus contract which hosts the Administrator badge.
     2. adminTerminusPoolId: The pool ID for the Administrator badge on that Terminus contract.
-    3. subjectAddress: The address of the ERC721 contract that the Inventory refers to.
+    3. contractAddress: The address of the ERC721 contract that the Inventory refers to.
      */
     function init(
         address adminTerminusAddress,
         uint256 adminTerminusPoolId,
-        address subjectAddress
+        address contractAddress
     ) external {
         LibDiamond.enforceIsContractOwner();
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
         istore.AdminTerminusAddress = adminTerminusAddress;
         istore.AdminTerminusPoolId = adminTerminusPoolId;
-        istore.SubjectERC721Address = subjectAddress;
+        istore.ContractERC721Address = contractAddress;
 
         emit AdministratorDesignated(adminTerminusAddress, adminTerminusPoolId);
-        emit SubjectDesignated(subjectAddress);
+        emit ContractAddressDesignated(contractAddress);
     }
 
     function adminTerminusInfo() external view returns (address, uint256) {
@@ -103,33 +115,104 @@ contract InventoryFacet is
     }
 
     function subject() external view returns (address) {
-        return LibInventory.inventoryStorage().SubjectERC721Address;
+        return LibInventory.inventoryStorage().ContractERC721Address;
     }
 
-    function createSlot(bool unequippable)
+    function createSlot(
+        bool unequippable,
+        uint256 slotType,
+        string memory slotURI
+    )
         external
         onlyAdmin
         returns (uint256)
     {
+        require(slotType <= uint(LibInventory.SlotType.Trophies) && slotType >= uint(LibInventory.SlotType.Clothes));
+
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
         // Slots are 1-indexed!
         istore.NumSlots += 1;
         uint256 newSlot = istore.NumSlots;
+
+        // TODO: @ogarciarevett remove this, is already in the Slot struct
         istore.SlotIsUnequippable[newSlot] = unequippable;
+        
+        // save the slot type!
+        istore.SlotData[newSlot] = LibInventory.Slot({
+            slotType: LibInventory.SlotType(slotType),
+            SlotURI: slotURI,
+            SlotIsUnequippable: unequippable,
+            SlotId: newSlot
+        });
 
         emit SlotCreated(msg.sender, newSlot, unequippable);
         return newSlot;
     }
 
+    function assignSlotToSubjectTokenId(uint256 toSubjectTokenId, uint256 slotId) external onlyAdmin {
+        LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
+
+        LibInventory.Slot memory slotData = istore.SlotData[slotId];
+
+        istore.SubjectSlots[istore.ContractERC721Address][toSubjectTokenId].push(slotData);
+
+        emit AssignSlotToSubjectTokenId(
+            toSubjectTokenId,
+            slotId
+        );
+    }
+
+    function getSubjectTokenSlots(uint256 subjectTokenId) external view returns(LibInventory.Slot[] memory slots) {
+        LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
+        IERC721 subjectContract = IERC721(istore.ContractERC721Address);
+        require(
+            msg.sender == subjectContract.ownerOf(subjectTokenId),
+            "InventoryFacet.getSubjectTokenSlots: Message sender is not owner of subject token"
+        );
+        return istore.SubjectSlots[istore.ContractERC721Address][subjectTokenId];
+    }
+
+    // COUNTER
     function numSlots() external view returns (uint256) {
         return LibInventory.inventoryStorage().NumSlots;
     }
 
-    function slotIsUnequippable(uint256 slot) external view returns (bool) {
-        return LibInventory.inventoryStorage().SlotIsUnequippable[slot];
+    function getSlotById(uint256 subjectTokenId, uint slotId)
+        external
+        view
+        // @TODO: @ogarciarevett add slotOwner modifier
+        returns (LibInventory.Slot memory slot) {
+        
+        return LibInventory.inventoryStorage().SlotData[slotId];
     }
+    
+    function getSlotURI(uint256 slotId) external view returns (string memory) {
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        return istore.SlotData[slotId].SlotURI;
+    }
+
+    // @TODO: @ogarciarevett add slotOwner modifier
+    function setSlotUri(string memory newSlotURI, uint slotId) external diamondNonReentrant {
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        LibInventory.Slot memory slot = istore.SlotData[slotId];
+        slot.SlotURI = newSlotURI;
+        emit NewSlotURI(slotId);
+    }
+
+    function slotIsUnequippable(uint256 slotId) external view returns (bool) {
+        return LibInventory.inventoryStorage().SlotData[slotId].SlotIsUnequippable;
+    }
+
+    // TODO: @ogarciarevett remove this, is already in the Slot struct
+    // function _slotIsUnequippable(uint256 slot) external view returns (bool) {
+    //     return LibInventory.inventoryStorage().SlotIsUnequippable[slot];
+    // }
 
     function markItemAsEquippableInSlot(
         uint256 slot,
@@ -205,7 +288,7 @@ contract InventoryFacet is
         );
 
         LibInventory.EquippedItem storage existingItem = istore.EquippedItems[
-            istore.SubjectERC721Address
+            istore.ContractERC721Address
         ][subjectTokenId][slot];
 
         if (unequipAll) {
@@ -254,7 +337,7 @@ contract InventoryFacet is
 
         existingItem.Amount -= amount;
         if (existingItem.Amount == 0) {
-            delete istore.EquippedItems[istore.SubjectERC721Address][
+            delete istore.EquippedItems[istore.ContractERC721Address][
                 subjectTokenId
             ][slot];
         }
@@ -284,7 +367,7 @@ contract InventoryFacet is
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
-        IERC721 subjectContract = IERC721(istore.SubjectERC721Address);
+        IERC721 subjectContract = IERC721(istore.ContractERC721Address);
         require(
             msg.sender == subjectContract.ownerOf(subjectTokenId),
             "InventoryFacet.equip: Message sender is not owner of subject token"
@@ -296,7 +379,7 @@ contract InventoryFacet is
         // between the existing amount of the token and the target amount.
         if (
             istore
-            .EquippedItems[istore.SubjectERC721Address][subjectTokenId][slot]
+            .EquippedItems[istore.ContractERC721Address][subjectTokenId][slot]
                 .ItemType != 0
         ) {
             _unequip(subjectTokenId, slot, true, 0);
@@ -361,7 +444,7 @@ contract InventoryFacet is
             msg.sender
         );
 
-        istore.EquippedItems[istore.SubjectERC721Address][subjectTokenId][
+        istore.EquippedItems[istore.ContractERC721Address][subjectTokenId][
                 slot
             ] = LibInventory.EquippedItem({
             ItemType: itemType,
@@ -380,7 +463,7 @@ contract InventoryFacet is
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
-        IERC721 subjectContract = IERC721(istore.SubjectERC721Address);
+        IERC721 subjectContract = IERC721(istore.ContractERC721Address);
         require(
             msg.sender == subjectContract.ownerOf(subjectTokenId),
             "InventoryFacet.equip: Message sender is not owner of subject token"
@@ -389,7 +472,7 @@ contract InventoryFacet is
         _unequip(subjectTokenId, slot, unequipAll, amount);
     }
 
-    function equipped(uint256 subjectTokenId, uint256 slot)
+    function getEquippedItems(uint256 subjectTokenId, uint256 slot)
         external
         view
         returns (LibInventory.EquippedItem memory item)
@@ -398,7 +481,7 @@ contract InventoryFacet is
             .inventoryStorage();
 
         LibInventory.EquippedItem memory equippedItem = istore.EquippedItems[
-            istore.SubjectERC721Address
+            istore.ContractERC721Address
         ][subjectTokenId][slot];
 
         return equippedItem;
