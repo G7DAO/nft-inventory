@@ -3,7 +3,8 @@ name: Lint game7ctl
 on:
   pull_request:
     branches:
-      - "main"
+      - main
+      - develop
 
 jobs:
   build:
