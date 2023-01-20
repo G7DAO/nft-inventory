@@ -35,6 +35,8 @@ jobs:
           BROWNIE_LIB: 1
         run: |
           pip install -e ".[dev]"
+      - name: Compile smart contracts
+        run: brownie compile
       - name: Run tests
         working-directory: game7ctl/
         run: bash test.sh game7ctl.test_inventory
