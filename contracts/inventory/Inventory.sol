@@ -332,7 +332,7 @@ contract InventoryFacet is
                 address(this),
                 msg.sender,
                 existingItem.ItemTokenId,
-                existingItem.Amount,
+                amount,
                 ""
             );
         }
