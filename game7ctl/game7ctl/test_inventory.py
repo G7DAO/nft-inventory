@@ -1473,6 +1473,113 @@ class TestPlayerFlow(InventoryTestCase):
             self.player.address,
         )
 
+    def test_player_can_unequip_some_but_not_all_erc1155_items_in_slot_on_their_subject_tokens(
+        self,
+    ):
+        # Mint tokens to player and set approvals
+        subject_token_id = self.nft.total_supply()
+        self.nft.mint(self.player.address, subject_token_id, {"from": self.owner})
+
+        self.terminus.create_pool_v1(MAX_UINT, True, True, self.owner_tx_config)
+        item_pool_id = self.terminus.total_pools()
+        self.terminus.mint(
+            self.player.address, item_pool_id, 100, "", self.owner_tx_config
+        )
+        self.terminus.set_approval_for_all(
+            self.inventory.address, True, {"from": self.player}
+        )
+
+        # Create inventory slot
+        unequippable = True
+        self.inventory.create_slot(unequippable, {"from": self.admin})
+        slot = self.inventory.num_slots()
+
+        # Set ERC1155 token as equippable in slot with max amount of 10
+        self.inventory.mark_item_as_equippable_in_slot(
+            slot, 1155, self.terminus.address, item_pool_id, 10, {"from": self.admin}
+        )
+
+        player_balance_0 = self.terminus.balance_of(self.player.address, item_pool_id)
+        inventory_balance_0 = self.terminus.balance_of(
+            self.inventory.address, item_pool_id
+        )
+
+        equipped_item_0 = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
+
+        self.inventory.equip(
+            subject_token_id,
+            slot,
+            1155,
+            self.terminus.address,
+            item_pool_id,
+            9,
+            {"from": self.player},
+        )
+
+        player_balance_1 = self.terminus.balance_of(self.player.address, item_pool_id)
+        inventory_balance_1 = self.terminus.balance_of(
+            self.inventory.address, item_pool_id
+        )
+
+        self.assertEqual(player_balance_1, player_balance_0 - 9)
+        self.assertEqual(inventory_balance_1, inventory_balance_0 + 9)
+
+        equipped_item_1 = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(
+            equipped_item_1, (1155, self.terminus.address, item_pool_id, 9)
+        )
+
+        tx_receipt = self.inventory.unequip(
+            subject_token_id, slot, False, 5, {"from": self.player}
+        )
+
+        player_balance_2 = self.terminus.balance_of(self.player.address, item_pool_id)
+        inventory_balance_2 = self.terminus.balance_of(
+            self.inventory.address, item_pool_id
+        )
+
+        self.assertEqual(player_balance_2, player_balance_1 + 5)
+        self.assertEqual(inventory_balance_2, inventory_balance_1 - 5)
+
+        equipped_item_2 = self.inventory.equipped(subject_token_id, slot)
+        self.assertEqual(
+            equipped_item_2, (1155, self.terminus.address, item_pool_id, 4)
+        )
+
+        item_unequipped_events = _fetch_events_chunk(
+            web3_client,
+            inventory_events.ITEM_UNEQUIPPED_ABI,
+            from_block=tx_receipt.block_number,
+            to_block=tx_receipt.block_number,
+        )
+        self.assertEqual(len(item_unequipped_events), 1)
+
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["subjectTokenId"], subject_token_id
+        )
+        self.assertEqual(item_unequipped_events[0]["args"]["slot"], slot)
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["itemType"],
+            1155,
+        )
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["itemAddress"],
+            self.terminus.address,
+        )
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["itemTokenId"],
+            item_pool_id,
+        )
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["amount"],
+            5,
+        )
+        self.assertEqual(
+            item_unequipped_events[0]["args"]["unequippedBy"],
+            self.player.address,
+        )
+
     def test_player_can_equip_an_item_and_then_replace_it_onto_their_subject_tokens_20_then_1155(
         self,
     ):
