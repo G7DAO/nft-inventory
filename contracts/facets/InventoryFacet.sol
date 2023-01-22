@@ -320,7 +320,7 @@ contract InventoryFacet is
                 address(this),
                 msg.sender,
                 existingItem.ItemTokenId,
-                existingItem.Amount,
+                amount,
                 ""
             );
         }
@@ -360,8 +360,8 @@ contract InventoryFacet is
         require(
             itemType == LibInventory.ERC20_ITEM_TYPE ||
                 itemType == LibInventory.ERC1155_ITEM_TYPE ||
-                amount <= 1,
-            "InventoryFacet.equip: amount can exceed 1 only for ERC20 and ERC1155 items"
+                amount == 1,
+            "InventoryFacet.equip: amount can be other value than 1 only for ERC20 and ERC1155 items"
         );
 
         LibInventory.InventoryStorage storage istore = LibInventory
