@@ -56,14 +56,10 @@ For example, after modifying `InventoryFacet`, you would run:
 moonworm generate-brownie -p . -o game7ctl/game7ctl -n InventoryFacet
 ```
 
-<<<<<<< HEAD
----
-=======
 If you want to register your contract for automatic regeneration, please add it to the `IMPORTANT_CONTRACTS` array in
 [./game7ctl/regen.bash](`regen.bash`).
 
 - - -
->>>>>>> ded38dabaea3dc442a34ebd16a2add8f7964868d
 
 ## Deploying contracts
 
