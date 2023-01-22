@@ -201,11 +201,9 @@ contract InventoryFacet is
         return LibInventory.inventoryStorage().SubjectERC721Address;
     }
 
-    function createSlot(bool unequippable)
-        external
-        onlyAdmin
-        returns (uint256)
-    {
+    function createSlot(
+        bool unequippable
+    ) external onlyAdmin returns (uint256) {
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
@@ -332,7 +330,7 @@ contract InventoryFacet is
                 address(this),
                 msg.sender,
                 existingItem.ItemTokenId,
-                existingItem.Amount,
+                amount,
                 ""
             );
         }
@@ -372,8 +370,8 @@ contract InventoryFacet is
         require(
             itemType == LibInventory.ERC20_ITEM_TYPE ||
                 itemType == LibInventory.ERC1155_ITEM_TYPE ||
-                amount <= 1,
-            "InventoryFacet.equip: amount can exceed 1 only for ERC20 and ERC1155 items"
+                amount == 1,
+            "InventoryFacet.equip: amount can be other value than 1 only for ERC20 and ERC1155 items"
         );
 
         LibInventory.InventoryStorage storage istore = LibInventory
@@ -484,11 +482,10 @@ contract InventoryFacet is
         _unequip(subjectTokenId, slot, unequipAll, amount);
     }
 
-    function equipped(uint256 subjectTokenId, uint256 slot)
-        external
-        view
-        returns (LibInventory.EquippedItem memory item)
-    {
+    function equipped(
+        uint256 subjectTokenId,
+        uint256 slot
+    ) external view returns (LibInventory.EquippedItem memory item) {
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
