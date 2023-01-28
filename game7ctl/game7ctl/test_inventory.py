@@ -113,7 +113,12 @@ class TestAdminFlow(InventoryTestCase):
         unequippable = False
 
         num_slots_0 = self.inventory.num_slots()
-        tx_receipt = self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        tx_receipt = self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         num_slots_1 = self.inventory.num_slots()
 
         self.assertEqual(num_slots_1, num_slots_0 + 1)
@@ -144,7 +149,12 @@ class TestAdminFlow(InventoryTestCase):
         unequippable = True
 
         num_slots_0 = self.inventory.num_slots()
-        tx_receipt = self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        tx_receipt = self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         num_slots_1 = self.inventory.num_slots()
 
         self.assertEqual(num_slots_1, num_slots_0 + 1)
@@ -176,7 +186,12 @@ class TestAdminFlow(InventoryTestCase):
 
         num_slots_0 = self.inventory.num_slots()
         with self.assertRaises(VirtualMachineError):
-            self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.player})
+            self.inventory.create_slot(
+                unequippable,
+                slot_type=1,
+                slot_uri="random_uri",
+                transaction_config={"from": self.player},
+            )
         num_slots_1 = self.inventory.num_slots()
 
         self.assertEqual(num_slots_1, num_slots_0)
@@ -185,7 +200,12 @@ class TestAdminFlow(InventoryTestCase):
         self,
     ):
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         invalid_type = 0
@@ -209,7 +229,12 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_admin_can_mark_erc20_tokens_as_eligible_for_slots(self):
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         erc20_type = 20
@@ -261,7 +286,12 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_nonadmin_cannot_mark_erc20_tokens_as_eligible_for_slots(self):
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         erc20_type = 20
@@ -287,7 +317,12 @@ class TestAdminFlow(InventoryTestCase):
         self,
     ):
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         erc20_type = 20
@@ -311,7 +346,12 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_admin_can_mark_erc721_tokens_as_eligible_for_slots(self):
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -363,7 +403,12 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_nonadmin_cannot_mark_erc721_tokens_as_eligible_for_slots(self):
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -389,7 +434,12 @@ class TestAdminFlow(InventoryTestCase):
         self,
     ):
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -415,7 +465,12 @@ class TestAdminFlow(InventoryTestCase):
         self,
     ):
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -441,7 +496,12 @@ class TestAdminFlow(InventoryTestCase):
         self,
     ):
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -511,7 +571,12 @@ class TestAdminFlow(InventoryTestCase):
     def test_admin_can_mark_erc1155_tokens_as_eligible_for_slots(self):
         # Testing with non-unequippable slot.
         unequippable = False
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         erc1155_type = 1155
@@ -565,7 +630,12 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_nonadmin_cannot_mark_erc1155_tokens_as_eligible_for_slots(self):
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         erc1155_type = 1155
@@ -602,7 +672,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         # Set ERC20 token as equippable in slot with max amount of 10
@@ -676,7 +751,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         # Set ERC20 token as equippable in slot with max amount of 10
@@ -720,7 +800,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         # Set ERC721 token as equippable in slot with max amount of 1
@@ -795,7 +880,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         # Set ERC721 token as equippable in slot with max amount of 1
@@ -836,7 +926,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         # Set ERC721 token as equippable in slot with max amount of 1
@@ -882,7 +977,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         # Set ERC1155 token as equippable in slot with max amount of 10
@@ -965,7 +1065,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         # Set ERC1155 token as equippable in slot with max amount of 10
@@ -1011,7 +1116,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
         self.assertTrue(self.inventory.slot_is_unequippable(slot))
 
@@ -1104,7 +1214,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
         self.assertTrue(self.inventory.slot_is_unequippable(slot))
 
@@ -1197,7 +1312,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
         self.assertTrue(self.inventory.slot_is_unequippable(slot))
 
@@ -1291,7 +1411,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
         self.assertTrue(self.inventory.slot_is_unequippable(slot))
 
@@ -1386,7 +1511,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         # Set ERC1155 token as equippable in slot with max amount of 10
@@ -1491,7 +1621,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         # Set ERC1155 token as equippable in slot with max amount of 10
@@ -1603,7 +1738,12 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
+        self.inventory.create_slot(
+            unequippable,
+            slot_type=1,
+            slot_uri="random_uri",
+            transaction_config={"from": self.admin},
+        )
         slot = self.inventory.num_slots()
 
         # Set ERC20 token as equippable in slot with max amount of 10
