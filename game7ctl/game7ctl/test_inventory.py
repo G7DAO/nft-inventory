@@ -93,17 +93,17 @@ class InventorySetupTests(InventoryTestCase):
     def test_subject_erc721_address(self):
         self.assertEqual(self.inventory.subject(), self.nft.address)
 
-    def test_subject_designated_event(self):
-        subject_designated_events = _fetch_events_chunk(
+    def test_contract_address_designated_event(self):
+        contract_address_designated_events = _fetch_events_chunk(
             web3_client,
-            inventory_events.SUBJECT_DESIGNATED_ABI,
+            inventory_events.CONTRACT_ADDRESS_DESIGNATED_ABI,
             self.predeployment_block,
             self.postdeployment_block,
         )
-        self.assertEqual(len(subject_designated_events), 1)
+        self.assertEqual(len(contract_address_designated_events), 1)
 
         self.assertEqual(
-            subject_designated_events[0]["args"]["subjectAddress"],
+            contract_address_designated_events[0]["args"]["contractAddress"],
             self.nft.address,
         )
 
@@ -113,7 +113,7 @@ class TestAdminFlow(InventoryTestCase):
         unequippable = False
 
         num_slots_0 = self.inventory.num_slots()
-        tx_receipt = self.inventory.create_slot(unequippable, {"from": self.admin})
+        tx_receipt = self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         num_slots_1 = self.inventory.num_slots()
 
         self.assertEqual(num_slots_1, num_slots_0 + 1)
@@ -144,7 +144,7 @@ class TestAdminFlow(InventoryTestCase):
         unequippable = True
 
         num_slots_0 = self.inventory.num_slots()
-        tx_receipt = self.inventory.create_slot(unequippable, {"from": self.admin})
+        tx_receipt = self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         num_slots_1 = self.inventory.num_slots()
 
         self.assertEqual(num_slots_1, num_slots_0 + 1)
@@ -176,7 +176,7 @@ class TestAdminFlow(InventoryTestCase):
 
         num_slots_0 = self.inventory.num_slots()
         with self.assertRaises(VirtualMachineError):
-            self.inventory.create_slot(unequippable, {"from": self.player})
+            self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.player})
         num_slots_1 = self.inventory.num_slots()
 
         self.assertEqual(num_slots_1, num_slots_0)
@@ -185,7 +185,7 @@ class TestAdminFlow(InventoryTestCase):
         self,
     ):
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         invalid_type = 0
@@ -209,7 +209,7 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_admin_can_mark_erc20_tokens_as_eligible_for_slots(self):
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc20_type = 20
@@ -261,7 +261,7 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_nonadmin_cannot_mark_erc20_tokens_as_eligible_for_slots(self):
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc20_type = 20
@@ -287,7 +287,7 @@ class TestAdminFlow(InventoryTestCase):
         self,
     ):
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc20_type = 20
@@ -311,7 +311,7 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_admin_can_mark_erc721_tokens_as_eligible_for_slots(self):
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -363,7 +363,7 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_nonadmin_cannot_mark_erc721_tokens_as_eligible_for_slots(self):
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -389,7 +389,7 @@ class TestAdminFlow(InventoryTestCase):
         self,
     ):
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -415,7 +415,7 @@ class TestAdminFlow(InventoryTestCase):
         self,
     ):
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -441,7 +441,7 @@ class TestAdminFlow(InventoryTestCase):
         self,
     ):
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc721_type = 721
@@ -511,7 +511,7 @@ class TestAdminFlow(InventoryTestCase):
     def test_admin_can_mark_erc1155_tokens_as_eligible_for_slots(self):
         # Testing with non-unequippable slot.
         unequippable = False
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc1155_type = 1155
@@ -565,7 +565,7 @@ class TestAdminFlow(InventoryTestCase):
 
     def test_nonadmin_cannot_mark_erc1155_tokens_as_eligible_for_slots(self):
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         erc1155_type = 1155
@@ -602,7 +602,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC20 token as equippable in slot with max amount of 10
@@ -629,7 +629,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 2)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 2)
 
-        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item, (20, self.payment_token.address, 0, 2))
 
         item_equipped_events = _fetch_events_chunk(
@@ -676,7 +676,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC20 token as equippable in slot with max amount of 10
@@ -704,7 +704,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0)
         self.assertEqual(inventory_balance_1, inventory_balance_0)
 
-        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
 
     def test_player_can_equip_erc721_items_onto_their_subject_tokens(self):
@@ -720,7 +720,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC721 token as equippable in slot with max amount of 1
@@ -742,7 +742,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.inventory.address)
 
-        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item, (721, self.item_nft.address, item_token_id, 1))
 
         item_equipped_events = _fetch_events_chunk(
@@ -795,7 +795,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC721 token as equippable in slot with max amount of 1
@@ -818,7 +818,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.player.address)
 
-        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
 
     def test_player_cannot_equip_erc721_items_which_they_do_not_own(self):
@@ -836,7 +836,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC721 token as equippable in slot with max amount of 1
@@ -863,7 +863,7 @@ class TestPlayerFlow(InventoryTestCase):
             self.item_nft.owner_of(item_token_id), self.random_person.address
         )
 
-        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
 
     def test_player_can_equip_erc1155_items_onto_their_subject_tokens(self):
@@ -882,7 +882,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC1155 token as equippable in slot with max amount of 10
@@ -913,7 +913,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 10)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 10)
 
-        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item, (1155, self.terminus.address, item_pool_id, 10))
 
         item_equipped_events = _fetch_events_chunk(
@@ -965,7 +965,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC1155 token as equippable in slot with max amount of 10
@@ -997,7 +997,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0)
         self.assertEqual(inventory_balance_1, inventory_balance_0)
 
-        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
 
     def test_player_can_unequip_all_erc20_items_in_slot_on_their_subject_tokens(self):
@@ -1011,7 +1011,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
         self.assertTrue(self.inventory.slot_is_unequippable(slot))
 
@@ -1023,7 +1023,7 @@ class TestPlayerFlow(InventoryTestCase):
         player_balance_0 = self.payment_token.balance_of(self.player.address)
         inventory_balance_0 = self.payment_token.balance_of(self.inventory.address)
 
-        equipped_item_0 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1042,7 +1042,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 2)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 2)
 
-        equipped_item_1 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_1, (20, self.payment_token.address, 0, 2))
 
         tx_receipt = self.inventory.unequip(
@@ -1055,7 +1055,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_2, player_balance_0)
         self.assertEqual(inventory_balance_2, inventory_balance_0)
 
-        equipped_item_2 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_2, (0, ZERO_ADDRESS, 0, 0))
 
         item_unequipped_events = _fetch_events_chunk(
@@ -1104,7 +1104,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
         self.assertTrue(self.inventory.slot_is_unequippable(slot))
 
@@ -1116,7 +1116,7 @@ class TestPlayerFlow(InventoryTestCase):
         player_balance_0 = self.payment_token.balance_of(self.player.address)
         inventory_balance_0 = self.payment_token.balance_of(self.inventory.address)
 
-        equipped_item_0 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1135,7 +1135,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 2)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 2)
 
-        equipped_item_1 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_1, (20, self.payment_token.address, 0, 2))
 
         tx_receipt = self.inventory.unequip(
@@ -1148,7 +1148,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_2, player_balance_1 + 1)
         self.assertEqual(inventory_balance_2, inventory_balance_1 - 1)
 
-        equipped_item_2 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_2, (20, self.payment_token.address, 0, 1))
 
         item_unequipped_events = _fetch_events_chunk(
@@ -1197,7 +1197,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
         self.assertTrue(self.inventory.slot_is_unequippable(slot))
 
@@ -1214,7 +1214,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.player.address)
 
-        equipped_item_0 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1229,7 +1229,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.inventory.address)
 
-        equipped_item_1 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(
             equipped_item_1, (721, self.item_nft.address, item_token_id, 1)
         )
@@ -1240,7 +1240,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.player.address)
 
-        equipped_item_2 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_2, (0, ZERO_ADDRESS, 0, 0))
 
         item_unequipped_events = _fetch_events_chunk(
@@ -1291,7 +1291,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
         self.assertTrue(self.inventory.slot_is_unequippable(slot))
 
@@ -1308,7 +1308,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.player.address)
 
-        equipped_item_0 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1323,7 +1323,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.inventory.address)
 
-        equipped_item_1 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(
             equipped_item_1, (721, self.item_nft.address, item_token_id, 1)
         )
@@ -1334,7 +1334,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.player.address)
 
-        equipped_item_2 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_2, (0, ZERO_ADDRESS, 0, 0))
 
         item_unequipped_events = _fetch_events_chunk(
@@ -1386,7 +1386,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC1155 token as equippable in slot with max amount of 10
@@ -1399,7 +1399,7 @@ class TestPlayerFlow(InventoryTestCase):
             self.inventory.address, item_pool_id
         )
 
-        equipped_item_0 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1420,7 +1420,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 9)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 9)
 
-        equipped_item_1 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(
             equipped_item_1, (1155, self.terminus.address, item_pool_id, 9)
         )
@@ -1437,7 +1437,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_2, player_balance_0)
         self.assertEqual(inventory_balance_2, inventory_balance_0)
 
-        equipped_item_2 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_2, (0, ZERO_ADDRESS, 0, 0))
 
         item_unequipped_events = _fetch_events_chunk(
@@ -1491,7 +1491,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC1155 token as equippable in slot with max amount of 10
@@ -1504,7 +1504,7 @@ class TestPlayerFlow(InventoryTestCase):
             self.inventory.address, item_pool_id
         )
 
-        equipped_item_0 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1525,7 +1525,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 9)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 9)
 
-        equipped_item_1 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(
             equipped_item_1, (1155, self.terminus.address, item_pool_id, 9)
         )
@@ -1542,7 +1542,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_2, player_balance_1 + 5)
         self.assertEqual(inventory_balance_2, inventory_balance_1 - 5)
 
-        equipped_item_2 = self.inventory.equipped(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(
             equipped_item_2, (1155, self.terminus.address, item_pool_id, 4)
         )
@@ -1603,7 +1603,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         # Create inventory slot
         unequippable = True
-        self.inventory.create_slot(unequippable, {"from": self.admin})
+        self.inventory.create_slot(unequippable, slot_type=1, slot_uri="random_uri", transaction_config={"from": self.admin})
         slot = self.inventory.num_slots()
 
         # Set ERC20 token as equippable in slot with max amount of 10
@@ -1639,7 +1639,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_erc20_balance_1, player_erc20_balance_0 - 2)
         self.assertEqual(inventory_erc20_balance_1, inventory_erc20_balance_0 + 2)
 
-        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item, (20, self.payment_token.address, 0, 2))
 
         player_erc1155_balance_1 = self.terminus.balance_of(
@@ -1667,7 +1667,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_erc20_balance_2, player_erc20_balance_0)
         self.assertEqual(inventory_erc20_balance_2, inventory_erc20_balance_0)
 
-        equipped_item = self.inventory.equipped(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
         self.assertEqual(equipped_item, (1155, self.terminus.address, item_pool_id, 9))
 
         player_erc1155_balance_2 = self.terminus.balance_of(

@@ -48,10 +48,6 @@ library LibInventory {
         address ContractERC721Address;
         uint256 NumSlots;
 
-        // TODO: @ogarciarevett remove this, is already in the Slot struct
-        // Slot => true if items can be unequipped from that slot and false otherwise
-        mapping(uint256 => bool) SlotIsUnequippable;
-
         // SlotId => slot, useful to get the rest of the slot data.
         mapping(uint256 => Slot) SlotData;
 

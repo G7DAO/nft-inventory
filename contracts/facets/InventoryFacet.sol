@@ -135,9 +135,6 @@ contract InventoryFacet is
         // Slots are 1-indexed!
         istore.NumSlots += 1;
         uint256 newSlot = istore.NumSlots;
-
-        // TODO: @ogarciarevett remove this, is already in the Slot struct
-        istore.SlotIsUnequippable[newSlot] = unequippable;
         
         // save the slot type!
         istore.SlotData[newSlot] = LibInventory.Slot({
@@ -283,7 +280,7 @@ contract InventoryFacet is
             .inventoryStorage();
 
         require(
-            istore.SlotIsUnequippable[slot],
+            istore.SlotData[slot].SlotIsUnequippable,
             "InventoryFacet._unequip: That slot is not unequippable"
         );
 
