@@ -2,6 +2,12 @@
 
 Main repo for Game7 contracts
 
+## Contributing
+
+Please if you want to contribute in the project, do the PR taking or creating a issue and then aim the PR for `develop` not main.
+
+The contributing guide is in progress...
+
 ## Setup
 
 ### Using Python and [eth-brownie](https://github.com/eth-brownie/brownie)
