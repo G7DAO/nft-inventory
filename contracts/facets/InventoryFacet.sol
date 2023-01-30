@@ -200,8 +200,7 @@ contract InventoryFacet is
         return istore.SlotData[slotId].SlotURI;
     }
 
-    // @TODO: @ogarciarevett add slotOwner modifier
-    function setSlotUri(string memory newSlotURI, uint slotId) external diamondNonReentrant {
+    function setSlotUri(string memory newSlotURI, uint slotId) external onlyAdmin {
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
