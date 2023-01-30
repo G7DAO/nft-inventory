@@ -95,7 +95,7 @@ interface IInventory {
         uint256 amount
     ) external;
 
-    function getEquippedItems(uint256 subjectTokenId, uint256 slot)
+    function getEquippedItem(uint256 subjectTokenId, uint256 slot)
         external
         view
         returns (LibInventory.EquippedItem memory item);

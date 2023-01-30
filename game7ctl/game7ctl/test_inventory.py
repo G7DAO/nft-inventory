@@ -704,7 +704,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 2)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 2)
 
-        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item, (20, self.payment_token.address, 0, 2))
 
         item_equipped_events = _fetch_events_chunk(
@@ -784,7 +784,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0)
         self.assertEqual(inventory_balance_1, inventory_balance_0)
 
-        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
 
     def test_player_can_equip_erc721_items_onto_their_subject_tokens(self):
@@ -827,7 +827,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.inventory.address)
 
-        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item, (721, self.item_nft.address, item_token_id, 1))
 
         item_equipped_events = _fetch_events_chunk(
@@ -908,7 +908,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.player.address)
 
-        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
 
     def test_player_cannot_equip_erc721_items_which_they_do_not_own(self):
@@ -958,7 +958,7 @@ class TestPlayerFlow(InventoryTestCase):
             self.item_nft.owner_of(item_token_id), self.random_person.address
         )
 
-        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
 
     def test_player_can_equip_erc1155_items_onto_their_subject_tokens(self):
@@ -1013,7 +1013,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 10)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 10)
 
-        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item, (1155, self.terminus.address, item_pool_id, 10))
 
         item_equipped_events = _fetch_events_chunk(
@@ -1102,7 +1102,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0)
         self.assertEqual(inventory_balance_1, inventory_balance_0)
 
-        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item, (0, ZERO_ADDRESS, 0, 0))
 
     def test_player_can_unequip_all_erc20_items_in_slot_on_their_subject_tokens(self):
@@ -1133,7 +1133,7 @@ class TestPlayerFlow(InventoryTestCase):
         player_balance_0 = self.payment_token.balance_of(self.player.address)
         inventory_balance_0 = self.payment_token.balance_of(self.inventory.address)
 
-        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1152,7 +1152,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 2)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 2)
 
-        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_1, (20, self.payment_token.address, 0, 2))
 
         tx_receipt = self.inventory.unequip(
@@ -1165,7 +1165,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_2, player_balance_0)
         self.assertEqual(inventory_balance_2, inventory_balance_0)
 
-        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_2, (0, ZERO_ADDRESS, 0, 0))
 
         item_unequipped_events = _fetch_events_chunk(
@@ -1231,7 +1231,7 @@ class TestPlayerFlow(InventoryTestCase):
         player_balance_0 = self.payment_token.balance_of(self.player.address)
         inventory_balance_0 = self.payment_token.balance_of(self.inventory.address)
 
-        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1250,7 +1250,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 2)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 2)
 
-        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_1, (20, self.payment_token.address, 0, 2))
 
         tx_receipt = self.inventory.unequip(
@@ -1263,7 +1263,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_2, player_balance_1 + 1)
         self.assertEqual(inventory_balance_2, inventory_balance_1 - 1)
 
-        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_2, (20, self.payment_token.address, 0, 1))
 
         item_unequipped_events = _fetch_events_chunk(
@@ -1334,7 +1334,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.player.address)
 
-        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1349,7 +1349,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.inventory.address)
 
-        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(
             equipped_item_1, (721, self.item_nft.address, item_token_id, 1)
         )
@@ -1360,7 +1360,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.player.address)
 
-        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_2, (0, ZERO_ADDRESS, 0, 0))
 
         item_unequipped_events = _fetch_events_chunk(
@@ -1433,7 +1433,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.player.address)
 
-        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1448,7 +1448,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.inventory.address)
 
-        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(
             equipped_item_1, (721, self.item_nft.address, item_token_id, 1)
         )
@@ -1459,7 +1459,7 @@ class TestPlayerFlow(InventoryTestCase):
 
         self.assertEqual(self.item_nft.owner_of(item_token_id), self.player.address)
 
-        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_2, (0, ZERO_ADDRESS, 0, 0))
 
         item_unequipped_events = _fetch_events_chunk(
@@ -1529,7 +1529,7 @@ class TestPlayerFlow(InventoryTestCase):
             self.inventory.address, item_pool_id
         )
 
-        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1550,7 +1550,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 9)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 9)
 
-        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(
             equipped_item_1, (1155, self.terminus.address, item_pool_id, 9)
         )
@@ -1567,7 +1567,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_2, player_balance_0)
         self.assertEqual(inventory_balance_2, inventory_balance_0)
 
-        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_2, (0, ZERO_ADDRESS, 0, 0))
 
         item_unequipped_events = _fetch_events_chunk(
@@ -1639,7 +1639,7 @@ class TestPlayerFlow(InventoryTestCase):
             self.inventory.address, item_pool_id
         )
 
-        equipped_item_0 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_0 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item_0, (0, ZERO_ADDRESS, 0, 0))
 
         self.inventory.equip(
@@ -1660,7 +1660,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_1, player_balance_0 - 9)
         self.assertEqual(inventory_balance_1, inventory_balance_0 + 9)
 
-        equipped_item_1 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_1 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(
             equipped_item_1, (1155, self.terminus.address, item_pool_id, 9)
         )
@@ -1677,7 +1677,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_balance_2, player_balance_1 + 5)
         self.assertEqual(inventory_balance_2, inventory_balance_1 - 5)
 
-        equipped_item_2 = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item_2 = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(
             equipped_item_2, (1155, self.terminus.address, item_pool_id, 4)
         )
@@ -1779,7 +1779,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_erc20_balance_1, player_erc20_balance_0 - 2)
         self.assertEqual(inventory_erc20_balance_1, inventory_erc20_balance_0 + 2)
 
-        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item, (20, self.payment_token.address, 0, 2))
 
         player_erc1155_balance_1 = self.terminus.balance_of(
@@ -1807,7 +1807,7 @@ class TestPlayerFlow(InventoryTestCase):
         self.assertEqual(player_erc20_balance_2, player_erc20_balance_0)
         self.assertEqual(inventory_erc20_balance_2, inventory_erc20_balance_0)
 
-        equipped_item = self.inventory.get_equipped_items(subject_token_id, slot)
+        equipped_item = self.inventory.get_equipped_item(subject_token_id, slot)
         self.assertEqual(equipped_item, (1155, self.terminus.address, item_pool_id, 9))
 
         player_erc1155_balance_2 = self.terminus.balance_of(

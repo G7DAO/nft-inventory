@@ -476,7 +476,7 @@ contract InventoryFacet is
         _unequip(subjectTokenId, slot, unequipAll, amount);
     }
 
-    function getEquippedItems(uint256 subjectTokenId, uint256 slot)
+    function getEquippedItem(uint256 subjectTokenId, uint256 slot)
         external
         view
         returns (LibInventory.EquippedItem memory item)

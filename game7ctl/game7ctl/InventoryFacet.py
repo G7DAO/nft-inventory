@@ -139,14 +139,14 @@ class InventoryFacet:
             transaction_config,
         )
 
-    def get_equipped_items(
+    def get_equipped_item(
         self,
         subject_token_id: int,
         slot: int,
         block_number: Optional[Union[str, int]] = "latest",
     ) -> Any:
         self.assert_contract_is_instantiated()
-        return self.contract.getEquippedItems.call(
+        return self.contract.getEquippedItem.call(
             subject_token_id, slot, block_identifier=block_number
         )
 
@@ -438,10 +438,10 @@ def handle_equip(args: argparse.Namespace) -> None:
         print(result.info())
 
 
-def handle_get_equipped_items(args: argparse.Namespace) -> None:
+def handle_get_equipped_item(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
-    result = contract.get_equipped_items(
+    result = contract.get_equipped_item(
         subject_token_id=args.subject_token_id,
         slot=args.slot,
         block_number=args.block_number,
@@ -693,15 +693,15 @@ def generate_cli() -> argparse.ArgumentParser:
     equip_parser.add_argument("--amount", required=True, help="Type: uint256", type=int)
     equip_parser.set_defaults(func=handle_equip)
 
-    get_equipped_items_parser = subcommands.add_parser("get-equipped-items")
-    add_default_arguments(get_equipped_items_parser, False)
-    get_equipped_items_parser.add_argument(
+    get_equipped_item_parser = subcommands.add_parser("get-equipped-item")
+    add_default_arguments(get_equipped_item_parser, False)
+    get_equipped_item_parser.add_argument(
         "--subject-token-id", required=True, help="Type: uint256", type=int
     )
-    get_equipped_items_parser.add_argument(
+    get_equipped_item_parser.add_argument(
         "--slot", required=True, help="Type: uint256", type=int
     )
-    get_equipped_items_parser.set_defaults(func=handle_get_equipped_items)
+    get_equipped_item_parser.set_defaults(func=handle_get_equipped_item)
 
     get_slot_by_id_parser = subcommands.add_parser("get-slot-by-id")
     add_default_arguments(get_slot_by_id_parser, False)
