@@ -132,7 +132,7 @@ brownie networks add Polygon $NETWORK_NAME host=$JSONRPC_URL chainid=137 explore
 
 The only keys which are not optional are `chainid` and `host`.
 
-Then, you could pass `--network $NETWORK_NAME` as an argument to `game7ctl core inventory-facet-deploy`.
+Then, you could pass `--network $NETWORK_NAME` as an argument to `game7ctl core contracts`.
 
 ##### `--sender`
 
