@@ -68,8 +68,11 @@ library LibInventory {
                                                                 // EquippedItem struct
         mapping(address => mapping(uint256 => mapping(uint256 => EquippedItem))) EquippedItems;
 
-        // Subject contract address => subject token ID => slotId => Slot[]
+        // Subject contract address => subject token ID => Slot[]
         mapping(address => mapping(uint256 => Slot[])) SubjectSlots;
+
+        // Subject contract address => subject token ID => slotNum
+        mapping(address => mapping(uint256 => uint256)) SubjectNumSlots;
 
         // Subject contract address => subject token ID => slotId => bool
         mapping(address => mapping(uint256 => mapping(uint256 => bool))) IsSubjectTokenBlackListedForSlot;

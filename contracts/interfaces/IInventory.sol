@@ -25,7 +25,7 @@ interface IInventory {
         uint256 maxAmount
     );
 
-    event AssignSlotToSubjectTokenId(uint indexed toSubjectTokenId, uint256 indexed slotId);
+    event BackpackAdded(address indexed creator, uint indexed toSubjectTokenId, uint256 indexed slotQuantity);
 
     event NewSlotURI(uint indexed slotId);
 
@@ -112,7 +112,12 @@ interface IInventory {
         view
         returns(LibInventory.Slot[] memory slot);
     
-    function addExtraSlotToSubjectTokenId(uint256 toSubjectTokenId, uint256 slotId) external;
+    function addBackPackToSubject(
+        uint256 slotQty,
+        uint256 toSubjectTokenId,
+        uint256 slotType,
+        string memory slotURI
+    ) external;
 
     function getSlotURI(uint256 slotId) external view returns (string memory);
 

@@ -74,16 +74,6 @@ contract InventoryFacet is
         _;
     }
 
-    modifier requireSubjectBlacklistedForSlot(uint256 toSubjectTokenId, uint256 slotId) {
-        LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
-
-        require(
-            istore.IsSubjectTokenBlackListedForSlot[istore.ContractERC721Address][toSubjectTokenId][slotId] == true,
-            "InventoryFacet.requireSubjectWhitelistedForSlot: The subject is not in the whitelist for this slot"
-        );
-        _;
-    }
-
     modifier onlyContractSubjectOwner(uint256 subjectTokenId) {
         LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
         IERC721 subjectContract = IERC721(istore.ContractERC721Address);
@@ -165,20 +155,40 @@ contract InventoryFacet is
         return istore.SlotTypes[slotType];
     }
 
-    function addExtraSlotToSubjectTokenId(
+    function addBackPackToSubject(
+        uint256 slotQty,
         uint256 toSubjectTokenId,
-        uint256 slotId
-    ) external onlyAdmin
-    requireSubjectBlacklistedForSlot(toSubjectTokenId, slotId) {
+        uint256 slotType,
+        string memory slotURI
+    ) external onlyAdmin {
+
+        require(
+            slotQty > 0,
+            "InventoryFacet.addBackPackToSubject: Slot quantity must be greater than 0"
+        );
+
         LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
 
-        LibInventory.Slot memory slotData = istore.SlotData[slotId];
+        uint256 previousSlotNumSubject = istore.SubjectSlots[istore.ContractERC721Address][toSubjectTokenId].length;
 
-        istore.SubjectSlots[istore.ContractERC721Address][toSubjectTokenId].push(slotData);
+        for (uint256 i = 0; i < slotQty; i++) {
+            istore.SubjectSlots[istore.ContractERC721Address][toSubjectTokenId].push(
+                LibInventory.Slot({
+                    SlotType: slotType,
+                    SlotURI: slotURI,
+                    SlotIsUnequippable: false,
+                    // previousSlotNumSubject = 3
+                    // previousSlotNumSubject + i = 3;(first iteration)
+                    // previousSlotNumSubject + 1 = 4;
+                    SlotId: previousSlotNumSubject + i  == previousSlotNumSubject ?  previousSlotNumSubject + 1:  previousSlotNumSubject + i
+                })
+            );
+        }
 
-        emit AssignSlotToSubjectTokenId(
+        emit BackpackAdded(
+            msg.sender,
             toSubjectTokenId,
-            slotId
+            slotQty
         );
     }
 
@@ -216,17 +226,13 @@ contract InventoryFacet is
 
         LibInventory.Slot memory slot = istore.SlotData[slotId];
         slot.SlotURI = newSlotURI;
+        istore.SlotData[slotId] = slot;
         emit NewSlotURI(slotId);
     }
 
     function slotIsUnequippable(uint256 slotId) external view returns (bool) {
         return LibInventory.inventoryStorage().SlotData[slotId].SlotIsUnequippable;
     }
-
-    // TODO: @ogarciarevett remove this, is already in the Slot struct
-    // function _slotIsUnequippable(uint256 slot) external view returns (bool) {
-    //     return LibInventory.inventoryStorage().SlotIsUnequippable[slot];
-    // }
 
     function markItemAsEquippableInSlot(
         uint256 slot,

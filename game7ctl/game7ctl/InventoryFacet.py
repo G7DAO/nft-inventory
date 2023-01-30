@@ -96,19 +96,24 @@ class InventoryFacet:
         contract_class = contract_from_build(self.contract_name)
         contract_class.publish_source(self.contract)
 
+    def add_back_pack_to_subject(
+        self,
+        slot_qty: int,
+        to_subject_token_id: int,
+        slot_type: int,
+        slot_uri: str,
+        transaction_config,
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.addBackPackToSubject(
+            slot_qty, to_subject_token_id, slot_type, slot_uri, transaction_config
+        )
+
     def admin_terminus_info(
         self, block_number: Optional[Union[str, int]] = "latest"
     ) -> Any:
         self.assert_contract_is_instantiated()
         return self.contract.adminTerminusInfo.call(block_identifier=block_number)
-
-    def assign_slot_to_subject_token_id(
-        self, to_subject_token_id: int, slot_id: int, transaction_config
-    ) -> Any:
-        self.assert_contract_is_instantiated()
-        return self.contract.assignSlotToSubjectTokenId(
-            to_subject_token_id, slot_id, transaction_config
-        )
 
     def create_slot(
         self, unequippable: bool, slot_type: int, slot_uri: str, transaction_config
@@ -160,6 +165,12 @@ class InventoryFacet:
         return self.contract.getSlotById.call(
             subject_token_id, slot_id, block_identifier=block_number
         )
+
+    def get_slot_type(
+        self, slot_type: int, block_number: Optional[Union[str, int]] = "latest"
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.getSlotType.call(slot_type, block_identifier=block_number)
 
     def get_slot_uri(
         self, slot_id: int, block_number: Optional[Union[str, int]] = "latest"
@@ -261,6 +272,12 @@ class InventoryFacet:
         return self.contract.onERC721Received(
             arg1, arg2, arg3, arg4, transaction_config
         )
+
+    def set_slot_type(
+        self, slot_type: int, slot_type_name: str, transaction_config
+    ) -> Any:
+        self.assert_contract_is_instantiated()
+        return self.contract.setSlotType(slot_type, slot_type_name, transaction_config)
 
     def set_slot_uri(self, new_slot_uri: str, slot_id: int, transaction_config) -> Any:
         self.assert_contract_is_instantiated()
@@ -384,25 +401,27 @@ def handle_verify_contract(args: argparse.Namespace) -> None:
     print(result)
 
 
-def handle_admin_terminus_info(args: argparse.Namespace) -> None:
-    network.connect(args.network)
-    contract = InventoryFacet(args.address)
-    result = contract.admin_terminus_info(block_number=args.block_number)
-    print(result)
-
-
-def handle_assign_slot_to_subject_token_id(args: argparse.Namespace) -> None:
+def handle_add_back_pack_to_subject(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
     transaction_config = get_transaction_config(args)
-    result = contract.assign_slot_to_subject_token_id(
+    result = contract.add_back_pack_to_subject(
+        slot_qty=args.slot_qty,
         to_subject_token_id=args.to_subject_token_id,
-        slot_id=args.slot_id,
+        slot_type=args.slot_type,
+        slot_uri=args.slot_uri,
         transaction_config=transaction_config,
     )
     print(result)
     if args.verbose:
         print(result.info())
+
+
+def handle_admin_terminus_info(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.admin_terminus_info(block_number=args.block_number)
+    print(result)
 
 
 def handle_create_slot(args: argparse.Namespace) -> None:
@@ -456,6 +475,15 @@ def handle_get_slot_by_id(args: argparse.Namespace) -> None:
         subject_token_id=args.subject_token_id,
         slot_id=args.slot_id,
         block_number=args.block_number,
+    )
+    print(result)
+
+
+def handle_get_slot_type(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    result = contract.get_slot_type(
+        slot_type=args.slot_type, block_number=args.block_number
     )
     print(result)
 
@@ -578,6 +606,20 @@ def handle_on_erc721_received(args: argparse.Namespace) -> None:
         print(result.info())
 
 
+def handle_set_slot_type(args: argparse.Namespace) -> None:
+    network.connect(args.network)
+    contract = InventoryFacet(args.address)
+    transaction_config = get_transaction_config(args)
+    result = contract.set_slot_type(
+        slot_type=args.slot_type,
+        slot_type_name=args.slot_type_name,
+        transaction_config=transaction_config,
+    )
+    print(result)
+    if args.verbose:
+        print(result.info())
+
+
 def handle_set_slot_uri(args: argparse.Namespace) -> None:
     network.connect(args.network)
     contract = InventoryFacet(args.address)
@@ -646,23 +688,25 @@ def generate_cli() -> argparse.ArgumentParser:
     add_default_arguments(verify_contract_parser, False)
     verify_contract_parser.set_defaults(func=handle_verify_contract)
 
+    add_back_pack_to_subject_parser = subcommands.add_parser("add-back-pack-to-subject")
+    add_default_arguments(add_back_pack_to_subject_parser, True)
+    add_back_pack_to_subject_parser.add_argument(
+        "--slot-qty", required=True, help="Type: uint256", type=int
+    )
+    add_back_pack_to_subject_parser.add_argument(
+        "--to-subject-token-id", required=True, help="Type: uint256", type=int
+    )
+    add_back_pack_to_subject_parser.add_argument(
+        "--slot-type", required=True, help="Type: uint256", type=int
+    )
+    add_back_pack_to_subject_parser.add_argument(
+        "--slot-uri", required=True, help="Type: string", type=str
+    )
+    add_back_pack_to_subject_parser.set_defaults(func=handle_add_back_pack_to_subject)
+
     admin_terminus_info_parser = subcommands.add_parser("admin-terminus-info")
     add_default_arguments(admin_terminus_info_parser, False)
     admin_terminus_info_parser.set_defaults(func=handle_admin_terminus_info)
-
-    assign_slot_to_subject_token_id_parser = subcommands.add_parser(
-        "assign-slot-to-subject-token-id"
-    )
-    add_default_arguments(assign_slot_to_subject_token_id_parser, True)
-    assign_slot_to_subject_token_id_parser.add_argument(
-        "--to-subject-token-id", required=True, help="Type: uint256", type=int
-    )
-    assign_slot_to_subject_token_id_parser.add_argument(
-        "--slot-id", required=True, help="Type: uint256", type=int
-    )
-    assign_slot_to_subject_token_id_parser.set_defaults(
-        func=handle_assign_slot_to_subject_token_id
-    )
 
     create_slot_parser = subcommands.add_parser("create-slot")
     add_default_arguments(create_slot_parser, True)
@@ -712,6 +756,13 @@ def generate_cli() -> argparse.ArgumentParser:
         "--slot-id", required=True, help="Type: uint256", type=int
     )
     get_slot_by_id_parser.set_defaults(func=handle_get_slot_by_id)
+
+    get_slot_type_parser = subcommands.add_parser("get-slot-type")
+    add_default_arguments(get_slot_type_parser, False)
+    get_slot_type_parser.add_argument(
+        "--slot-type", required=True, help="Type: uint256", type=int
+    )
+    get_slot_type_parser.set_defaults(func=handle_get_slot_type)
 
     get_slot_uri_parser = subcommands.add_parser("get-slot-uri")
     add_default_arguments(get_slot_uri_parser, False)
@@ -840,6 +891,16 @@ def generate_cli() -> argparse.ArgumentParser:
         "--arg4", required=True, help="Type: bytes", type=bytes_argument_type
     )
     on_erc721_received_parser.set_defaults(func=handle_on_erc721_received)
+
+    set_slot_type_parser = subcommands.add_parser("set-slot-type")
+    add_default_arguments(set_slot_type_parser, True)
+    set_slot_type_parser.add_argument(
+        "--slot-type", required=True, help="Type: uint256", type=int
+    )
+    set_slot_type_parser.add_argument(
+        "--slot-type-name", required=True, help="Type: string", type=str
+    )
+    set_slot_type_parser.set_defaults(func=handle_set_slot_type)
 
     set_slot_uri_parser = subcommands.add_parser("set-slot-uri")
     add_default_arguments(set_slot_uri_parser, True)
