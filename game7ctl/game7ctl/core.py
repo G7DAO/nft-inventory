@@ -2,7 +2,6 @@ import argparse
 import json
 import os
 import sys
-import time
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 
@@ -182,7 +181,7 @@ def facet_cut(
     return transaction
 
 
-def diamond_gogogo(
+def diamond(
     owner_address: str,
     transaction_config: Dict[str, Any],
     diamond_cut_address: Optional[str] = None,
@@ -280,7 +279,7 @@ def diamond_gogogo(
     return result
 
 
-def contracts(
+def dao(
     admin_terminus_address: str,
     admin_terminus_pool_id: int,
     subject_erc721_address: str,
@@ -296,7 +295,7 @@ def contracts(
 
     Returns the addresses and attachments.
     """
-    deployment_info = diamond_gogogo(
+    deployment_info = diamond(
         owner_address=transaction_config["from"].address,
         transaction_config=transaction_config,
         diamond_cut_address=diamond_cut_address,
@@ -353,7 +352,7 @@ def handle_facet_cut(args: argparse.Namespace) -> None:
     )
 
 
-def handle_contracts(args: argparse.Namespace) -> None:
+def handle_dao(args: argparse.Namespace) -> None:
     network.connect(args.network)
     transaction_config = InventoryFacet.get_transaction_config(args)
     result = contracts(
@@ -432,7 +431,7 @@ def generate_cli():
     facet_cut_parser.set_defaults(func=handle_facet_cut)
 
     contracts_parser = subcommands.add_parser(
-        "contracts",
+        "dao",
         description="Deploy G7 diamond contract",
     )
     Diamond.add_default_arguments(contracts_parser, transact=True)
@@ -489,6 +488,6 @@ def generate_cli():
         default=None,
         help="(Optional) file to write deployed addresses to",
     )
-    contracts_parser.set_defaults(func=handle_contracts)
+    contracts_parser.set_defaults(func=handle_dao)
 
     return parser

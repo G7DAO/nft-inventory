@@ -64,18 +64,6 @@ contract InventoryFacet is
         _;
     }
 
-    // TODO: @ogarciarevett finish this
-    // modifier onlySlotOwner(uint256 slotId) {
-    //     // LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
-
-    //     // // TODO: @ogarciarevett check if asking for the msg.sender will be required, if the user change the wallet could loose this relation
-    //     // istore.SubjectSlots[msg.sender]
-
-    //     // require(msg.sender);
-
-    //     _;
-    // }
-
     modifier requireValidItemType(uint256 itemType) {
         require(
             itemType == LibInventory.ERC20_ITEM_TYPE ||
@@ -86,10 +74,22 @@ contract InventoryFacet is
         _;
     }
 
-    modifier requireValidSlotType(uint256 slotType) {
+    modifier requireSubjectBlacklistedForSlot(uint256 toSubjectTokenId, uint256 slotId) {
+        LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
+
         require(
-            slotType <= uint(LibInventory.SlotType.Trophies) && slotType >= uint(LibInventory.SlotType.Unknown),
-            "InventoryFacet.createSlot: Invalid slot type"
+            istore.IsSubjectTokenBlackListedForSlot[istore.ContractERC721Address][toSubjectTokenId][slotId] == true,
+            "InventoryFacet.requireSubjectWhitelistedForSlot: The subject is not in the whitelist for this slot"
+        );
+        _;
+    }
+
+    modifier onlyContractSubjectOwner(uint256 subjectTokenId) {
+        LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
+        IERC721 subjectContract = IERC721(istore.ContractERC721Address);
+        require(
+            msg.sender == subjectContract.ownerOf(subjectTokenId),
+            "InventoryFacet.getSubjectTokenSlots: Message sender is not owner of subject token"
         );
         _;
     }
@@ -133,7 +133,6 @@ contract InventoryFacet is
     )
         external
         onlyAdmin
-        requireValidSlotType(slotType)
         returns (uint256)
     {
 
@@ -143,10 +142,9 @@ contract InventoryFacet is
         // Slots are 1-indexed!
         istore.NumSlots += 1;
         uint256 newSlot = istore.NumSlots;
-        
         // save the slot type!
         istore.SlotData[newSlot] = LibInventory.Slot({
-            slotType: LibInventory.SlotType(slotType),
+            SlotType: slotType,
             SlotURI: slotURI,
             SlotIsUnequippable: unequippable,
             SlotId: newSlot
@@ -156,7 +154,22 @@ contract InventoryFacet is
         return newSlot;
     }
 
-    function assignSlotToSubjectTokenId(uint256 toSubjectTokenId, uint256 slotId) external onlyAdmin {
+    function setSlotType(uint256 slotType, string memory slotTypeName) external onlyAdmin {
+        LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
+        istore.SlotTypes[slotType] = slotTypeName;
+        emit NewSlotTypeAdded(msg.sender, slotType, slotTypeName);
+    }
+
+    function getSlotType(uint256 slotType) external view returns(string memory slotTypeName) {
+        LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
+        return istore.SlotTypes[slotType];
+    }
+
+    function addExtraSlotToSubjectTokenId(
+        uint256 toSubjectTokenId,
+        uint256 slotId
+    ) external onlyAdmin
+    requireSubjectBlacklistedForSlot(toSubjectTokenId, slotId) {
         LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
 
         LibInventory.Slot memory slotData = istore.SlotData[slotId];
@@ -169,13 +182,10 @@ contract InventoryFacet is
         );
     }
 
-    function getSubjectTokenSlots(uint256 subjectTokenId) external view returns(LibInventory.Slot[] memory slots) {
+    function getSubjectTokenSlots(
+        uint256 subjectTokenId
+    ) external view onlyContractSubjectOwner(subjectTokenId) returns(LibInventory.Slot[] memory slots) {
         LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
-        IERC721 subjectContract = IERC721(istore.ContractERC721Address);
-        require(
-            msg.sender == subjectContract.ownerOf(subjectTokenId),
-            "InventoryFacet.getSubjectTokenSlots: Message sender is not owner of subject token"
-        );
         return istore.SubjectSlots[istore.ContractERC721Address][subjectTokenId];
     }
 
@@ -187,7 +197,7 @@ contract InventoryFacet is
     function getSlotById(uint256 subjectTokenId, uint slotId)
         external
         view
-        // @TODO: @ogarciarevett add slotOwner modifier
+        onlyAdmin
         returns (LibInventory.Slot memory slot) {
         
         return LibInventory.inventoryStorage().SlotData[slotId];

@@ -13,25 +13,9 @@ library LibInventory {
     uint256 constant ERC721_ITEM_TYPE = 721;
     uint256 constant ERC1155_ITEM_TYPE = 1155;
 
-    // Returns uint
-    // Unknown  - 0
-    // Clothes  - 1
-    // Accesories  - 2
-    // Materials - 3
-    // Badges - 4
-    // Trophies - 5
-    enum SlotType {
-        Unknown,
-        Clothes,
-        Accesories,
-        Materials,
-        Badges,
-        Trophies
-    }
-
     struct Slot {
         string SlotURI;
-        SlotType slotType;
+        uint256 SlotType;
         bool SlotIsUnequippable;
         uint256 SlotId;
     }
@@ -52,6 +36,10 @@ library LibInventory {
 
         // SlotId => slot, useful to get the rest of the slot data.
         mapping(uint256 => Slot) SlotData;
+
+
+        // SlotType => "slot type name"
+        mapping(uint256 => string) SlotTypes;
 
 
         // Slot => item type => item address => item pool ID => maximum equippable
@@ -80,10 +68,13 @@ library LibInventory {
                                                                 // EquippedItem struct
         mapping(address => mapping(uint256 => mapping(uint256 => EquippedItem))) EquippedItems;
 
-        // ERC721 Contract Address => 
-                          // subjectTokenId => 
-                                             // slots
+        // Subject contract address => subject token ID => slotId => Slot[]
         mapping(address => mapping(uint256 => Slot[])) SubjectSlots;
+
+        // Subject contract address => subject token ID => slotId => bool
+        mapping(address => mapping(uint256 => mapping(uint256 => bool))) IsSubjectTokenBlackListedForSlot;
+
+
     }
 
     function inventoryStorage()

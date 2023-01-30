@@ -15,6 +15,8 @@ interface IInventory {
 
     event SlotCreated(address indexed creator, uint256 slot, bool unequippable);
 
+    event NewSlotTypeAdded(address indexed creator, uint256 indexed slotType, string slotTypeName);
+
     event ItemMarkedAsEquippableInSlot(
         uint256 indexed slot,
         uint256 indexed itemType,
@@ -110,7 +112,11 @@ interface IInventory {
         view
         returns(LibInventory.Slot[] memory slot);
     
-    function assignSlotToSubjectTokenId(uint256 toSubjectTokenId, uint256 slotId) external;
+    function addExtraSlotToSubjectTokenId(uint256 toSubjectTokenId, uint256 slotId) external;
 
     function getSlotURI(uint256 slotId) external view returns (string memory);
+
+    function setSlotType(uint256 slotType, string memory slotTypeName) external;
+
+    function getSlotType(uint256 slotType) external view returns(string memory slotTypeName);
 }

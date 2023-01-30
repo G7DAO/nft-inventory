@@ -20,6 +20,9 @@ def generate_cli() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers()
 
     core_parser = core_generate_cli()
+    # TODO: @ogarciarevett rename this: final result should be like:
+    # game7ctl dao inventory, game7ctl dao achievement, game7ctl dao avatar
+    # Issue #39
     subparsers.add_parser("core", parents=[core_parser], add_help=False)
 
     inventory_parser = inventory_generate_cli()
