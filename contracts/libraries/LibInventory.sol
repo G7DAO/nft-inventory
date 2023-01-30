@@ -14,12 +14,14 @@ library LibInventory {
     uint256 constant ERC1155_ITEM_TYPE = 1155;
 
     // Returns uint
-    // Clothes  - 0
-    // Accesories  - 1
-    // Materials - 2
-    // Badges - 3
-    // Trophies - 4
-    enum SlotType { 
+    // Unknown  - 0
+    // Clothes  - 1
+    // Accesories  - 2
+    // Materials - 3
+    // Badges - 4
+    // Trophies - 5
+    enum SlotType {
+        Unknown,
         Clothes,
         Accesories,
         Materials,

@@ -86,6 +86,14 @@ contract InventoryFacet is
         _;
     }
 
+    modifier requireValidSlotType(uint256 slotType) {
+        require(
+            slotType <= uint(LibInventory.SlotType.Trophies) && slotType >= uint(LibInventory.SlotType.Unknown),
+            "InventoryFacet.createSlot: Invalid slot type"
+        );
+        _;
+    }
+
     /**
     An Inventory must be initialized with:
     1. adminTerminusAddress: The address for the Terminus contract which hosts the Administrator badge.
@@ -125,9 +133,9 @@ contract InventoryFacet is
     )
         external
         onlyAdmin
+        requireValidSlotType(slotType)
         returns (uint256)
     {
-        require(slotType <= uint(LibInventory.SlotType.Trophies) && slotType >= uint(LibInventory.SlotType.Clothes));
 
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
