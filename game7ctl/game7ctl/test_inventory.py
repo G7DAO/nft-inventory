@@ -6,7 +6,7 @@ from brownie.network import chain
 from moonworm.watch import _fetch_events_chunk
 
 from . import InventoryFacet, MockERC20, MockERC721, MockTerminus, inventory_events
-from .core import inventory_gogogo
+from .core import contracts
 
 MAX_UINT = 2**256 - 1
 
@@ -54,7 +54,7 @@ class InventoryTestCase(unittest.TestCase):
         )
 
         cls.predeployment_block = len(chain)
-        cls.deployed_contracts = inventory_gogogo(
+        cls.deployed_contracts = contracts(
             cls.terminus.address,
             cls.admin_terminus_pool_id,
             cls.nft.address,
