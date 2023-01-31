@@ -279,7 +279,7 @@ def diamond(
     return result
 
 
-def dao(
+def systems(
     admin_terminus_address: str,
     admin_terminus_pool_id: int,
     subject_erc721_address: str,
@@ -352,10 +352,10 @@ def handle_facet_cut(args: argparse.Namespace) -> None:
     )
 
 
-def handle_dao(args: argparse.Namespace) -> None:
+def handle_systems(args: argparse.Namespace) -> None:
     network.connect(args.network)
     transaction_config = InventoryFacet.get_transaction_config(args)
-    result = contracts(
+    result = systems(
         admin_terminus_address=args.admin_terminus_address,
         admin_terminus_pool_id=args.admin_terminus_pool_id,
         subject_erc721_address=args.subject_erc721_address,
@@ -431,7 +431,7 @@ def generate_cli():
     facet_cut_parser.set_defaults(func=handle_facet_cut)
 
     contracts_parser = subcommands.add_parser(
-        "dao",
+        "systems",
         description="Deploy G7 diamond contract",
     )
     Diamond.add_default_arguments(contracts_parser, transact=True)
@@ -488,6 +488,6 @@ def generate_cli():
         default=None,
         help="(Optional) file to write deployed addresses to",
     )
-    contracts_parser.set_defaults(func=handle_dao)
+    contracts_parser.set_defaults(func=handle_systems)
 
     return parser

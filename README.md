@@ -2,6 +2,12 @@
 
 Main repo for Game7 contracts
 
+## Contributing
+
+Please if you want to contribute in the project, do the PR taking or creating a issue and then aim the PR for `develop` not main.
+
+The contributing guide is in progress...
+
 ## Setup
 
 ### Using Python and [eth-brownie](https://github.com/eth-brownie/brownie)
@@ -71,7 +77,7 @@ to deploy the Inventory contract as a Diamond proxy, you would use the `game7ctl
 To see all the parameters you can pass in the deployment, run:
 
 ```
-$ game7ctl core dao --help
+$ game7ctl dao systems --help
 usage: game7ctl dao [-h] --network NETWORK [--address ADDRESS] --sender SENDER [--password PASSWORD] [--gas-price GAS_PRICE] [--max-fee-per-gas MAX_FEE_PER_GAS]
                                  [--max-priority-fee-per-gas MAX_PRIORITY_FEE_PER_GAS] [--confirmations CONFIRMATIONS] [--nonce NONCE] [--value VALUE] [--verbose] --admin-terminus-address
                                  ADMIN_TERMINUS_ADDRESS --admin-terminus-pool-id ADMIN_TERMINUS_POOL_ID --subject-erc721-address SUBJECT_ERC721_ADDRESS
@@ -153,11 +159,11 @@ The preferred way of using `--sender` is still by passing a keystore file.
 
 ##### Deployment Example:
 
-If you follow all the explanations above, you should be able to deploy the Inventory contract as a Diamond proxy
+If you follow all the explanations above, you should be able to deploy the entire Diamond proxy with the InventoryFacet
 
 Using a command like this:
 
 ```
-game7ctl core dao --network <NETWORK> --admin-terminus-address <TERMINUS_ADMIN_ADDRESS> --admin-terminus-pool-id <POOL_ID> --sender <BROWNIE_ACCOUNT/KEYSTORE FILE PATH> --subject-erc721-address <ERC_721_CONTRACT_ADDRESS>
+game7ctl dao systems --network <NETWORK> --admin-terminus-address <TERMINUS_ADMIN_ADDRESS> --admin-terminus-pool-id <POOL_ID> --sender <BROWNIE_ACCOUNT/KEYSTORE FILE PATH> --subject-erc721-address <ERC_721_CONTRACT_ADDRESS>
 ```
 
