@@ -384,7 +384,7 @@ def handle_systems(args: argparse.Namespace) -> None:
         diamond_loupe_address=args.diamond_loupe_address,
         ownership_address=args.ownership_address,
         inventory_facet_address=args.inventory_facet_address,
-        verify_contract=args.verify_contract
+        verify_contract=args.verify_contract,
     )
     if args.outfile is not None:
         with args.outfile:
@@ -426,6 +426,7 @@ def generate_cli():
     facet_cut_parser.add_argument(
         "--initializer-address",
         default=ZERO_ADDRESS,
+        required=True,
         help=f"Address of contract to run as initializer after cut (default: {ZERO_ADDRESS})",
     )
     facet_cut_parser.add_argument(
