@@ -78,11 +78,27 @@ To see all the parameters you can pass in the deployment, run:
 
 ```
 $ game7ctl dao systems --help
-usage: game7ctl dao [-h] --network NETWORK [--address ADDRESS] --sender SENDER [--password PASSWORD] [--gas-price GAS_PRICE] [--max-fee-per-gas MAX_FEE_PER_GAS]
-                                 [--max-priority-fee-per-gas MAX_PRIORITY_FEE_PER_GAS] [--confirmations CONFIRMATIONS] [--nonce NONCE] [--value VALUE] [--verbose] --admin-terminus-address
-                                 ADMIN_TERMINUS_ADDRESS --admin-terminus-pool-id ADMIN_TERMINUS_POOL_ID --subject-erc721-address SUBJECT_ERC721_ADDRESS
-                                 [--diamond-cut-address DIAMOND_CUT_ADDRESS] [--diamond-address DIAMOND_ADDRESS] [--diamond-loupe-address DIAMOND_LOUPE_ADDRESS]
-                                 [--ownership-address OWNERSHIP_ADDRESS] [--inventory-facet-address INVENTORY_FACET_ADDRESS] [-o OUTFILE]
+usage: game7ctl dao [-h] 
+    --network NETWORK
+    --admin-terminus-address ADMIN_TERMINUS_ADDRESS
+    --admin-terminus-pool-id ADMIN_TERMINUS_POOL_ID
+    --subject-erc721-address SUBJECT_ERC721_ADDRESS
+    --sender SENDER
+    [--verify-contracts]
+    [--address ADDRESS]
+    [--password PASSWORD]
+    [--gas-price GAS_PRICE]
+    [--max-fee-per-gas MAX_FEE_PER_GAS]
+    [--max-priority-fee-per-gas MAX_PRIORITY_FEE_PER_GAS]
+    [--confirmations CONFIRMATIONS]
+    [--nonce NONCE] [--value VALUE]
+    [--verbose]
+    [--diamond-cut-address DIAMOND_CUT_ADDRESS]
+    [--diamond-address DIAMOND_ADDRESS]
+    [--diamond-loupe-address DIAMOND_LOUPE_ADDRESS]
+    [--ownership-address OWNERSHIP_ADDRESS]
+    [--inventory-facet-address INVENTORY_FACET_ADDRESS]
+    [-o OUTFILE]
 
 Deploy Inventory diamond contract
 
@@ -103,6 +119,7 @@ options:
   --nonce NONCE         Nonce for the transaction (optional)
   --value VALUE         Value of the transaction in wei(optional)
   --verbose             Print verbose output
+  --verify-contracts    Verify contracts on the EVM that you deploy to
   --admin-terminus-address ADMIN_TERMINUS_ADDRESS
                         Address of Terminus contract defining access control for this GardenOfForkingPaths contract
   --admin-terminus-pool-id ADMIN_TERMINUS_POOL_ID

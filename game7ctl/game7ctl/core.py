@@ -188,7 +188,7 @@ def diamond(
     diamond_address: Optional[str] = None,
     diamond_loupe_address: Optional[str] = None,
     ownership_address: Optional[str] = None,
-    verify_contract: Optional[bool] = False,
+    verify_contracts: Optional[bool] = False,
 ) -> Dict[str, Any]:
     """
     Deploy diamond along with all its basic facets and attach those facets to the diamond.
@@ -277,7 +277,7 @@ def diamond(
         return result
     result["attached"].append("OwnershipFacet")
 
-    if verify_contract:
+    if verify_contracts:
         try:
             diamond_cut_facet.verify_contract()
             diamond.verify_contract()
@@ -302,7 +302,7 @@ def systems(
     diamond_loupe_address: Optional[str] = None,
     ownership_address: Optional[str] = None,
     inventory_facet_address: Optional[str] = None,
-    verify_contract: Optional[bool] = False,
+    verify_contracts: Optional[bool] = False,
 ) -> Dict[str, Any]:
 
     """
@@ -317,7 +317,7 @@ def systems(
         diamond_address=diamond_address,
         diamond_loupe_address=diamond_loupe_address,
         ownership_address=ownership_address,
-        verify_contract=verify_contract,
+        verify_contracts=verify_contracts,
     )
 
     if inventory_facet_address is None:
@@ -326,7 +326,7 @@ def systems(
     else:
         inventory_facet = InventoryFacet.InventoryFacet(inventory_facet_address)
 
-    if verify_contract:
+    if verify_contracts:
         inventory_facet.verify_contract()
 
     deployment_info["contracts"]["InventoryFacet"] = inventory_facet.address
@@ -384,7 +384,7 @@ def handle_systems(args: argparse.Namespace) -> None:
         diamond_loupe_address=args.diamond_loupe_address,
         ownership_address=args.ownership_address,
         inventory_facet_address=args.inventory_facet_address,
-        verify_contract=args.verify_contract,
+        verify_contracts=args.verify_contracts,
     )
     if args.outfile is not None:
         with args.outfile:
@@ -457,10 +457,8 @@ def generate_cli():
     )
     Diamond.add_default_arguments(contracts_parser, transact=True)
     contracts_parser.add_argument(
-        "--verify-contract",
-        required=False,
-        type=bool,
-        default=False,
+        "--verify-contracts",
+        action="store_true",
         help="Verify contracts",
     )
     contracts_parser.add_argument(
