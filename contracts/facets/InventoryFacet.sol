@@ -140,11 +140,15 @@ contract InventoryFacet is
             SlotId: newSlot
         });
 
-        emit SlotCreated(msg.sender, newSlot, unequippable);
+        emit SlotCreated(msg.sender, newSlot, unequippable, slotType);
         return newSlot;
     }
 
     function setSlotType(uint256 slotType, string memory slotTypeName) external onlyAdmin {
+        require(
+            bytes(slotTypeName).length > 0,
+            "InventoryFacet.setSlotType: Slot type name must be non-empty");
+        require(slotType > 0, "InventoryFacet.setSlotType: Slot type must be greater than 0");
         LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
         istore.SlotTypes[slotType] = slotTypeName;
         emit NewSlotTypeAdded(msg.sender, slotType, slotTypeName);
@@ -155,7 +159,7 @@ contract InventoryFacet is
         return istore.SlotTypes[slotType];
     }
 
-    function addBackPackToSubject(
+    function addBackpackToSubject(
         uint256 slotQty,
         uint256 toSubjectTokenId,
         uint256 slotType,
@@ -164,7 +168,7 @@ contract InventoryFacet is
 
         require(
             slotQty > 0,
-            "InventoryFacet.addBackPackToSubject: Slot quantity must be greater than 0"
+            "InventoryFacet.addBackpackToSubject: Slot quantity must be greater than 0"
         );
 
         LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
@@ -207,7 +211,6 @@ contract InventoryFacet is
     function getSlotById(uint256 subjectTokenId, uint slotId)
         external
         view
-        onlyAdmin
         returns (LibInventory.Slot memory slot) {
         
         return LibInventory.inventoryStorage().SlotData[slotId];
@@ -499,6 +502,8 @@ contract InventoryFacet is
     {
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
+
+        require(slot >= this.numSlots(), "InventoryFacet.getEquippedItem: Slot does not exist");
 
         LibInventory.EquippedItem memory equippedItem = istore.EquippedItems[
             istore.ContractERC721Address

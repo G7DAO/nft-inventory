@@ -13,7 +13,7 @@ interface IInventory {
 
     event ContractAddressDesignated(address indexed contractAddress);
 
-    event SlotCreated(address indexed creator, uint256 slot, bool unequippable);
+    event SlotCreated(address indexed creator, uint256 indexed slot, bool unequippable, uint256 indexed slotType);
 
     event NewSlotTypeAdded(address indexed creator, uint256 indexed slotType, string slotTypeName);
 
@@ -112,7 +112,7 @@ interface IInventory {
         view
         returns(LibInventory.Slot[] memory slot);
     
-    function addBackPackToSubject(
+    function addBackpackToSubject(
         uint256 slotQty,
         uint256 toSubjectTokenId,
         uint256 slotType,
