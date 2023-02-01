@@ -2,7 +2,6 @@ import argparse
 import json
 import os
 import sys
-import time
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 
@@ -182,7 +181,7 @@ def facet_cut(
     return transaction
 
 
-def diamond_gogogo(
+def diamond(
     owner_address: str,
     transaction_config: Dict[str, Any],
     diamond_cut_address: Optional[str] = None,
@@ -280,7 +279,7 @@ def diamond_gogogo(
     return result
 
 
-def inventory_gogogo(
+def systems(
     admin_terminus_address: str,
     admin_terminus_pool_id: int,
     subject_erc721_address: str,
@@ -296,7 +295,7 @@ def inventory_gogogo(
 
     Returns the addresses and attachments.
     """
-    deployment_info = diamond_gogogo(
+    deployment_info = diamond(
         owner_address=transaction_config["from"].address,
         transaction_config=transaction_config,
         diamond_cut_address=diamond_cut_address,
@@ -353,10 +352,10 @@ def handle_facet_cut(args: argparse.Namespace) -> None:
     )
 
 
-def handle_inventory_gogogo(args: argparse.Namespace) -> None:
+def handle_systems(args: argparse.Namespace) -> None:
     network.connect(args.network)
     transaction_config = InventoryFacet.get_transaction_config(args)
-    result = inventory_gogogo(
+    result = systems(
         admin_terminus_address=args.admin_terminus_address,
         admin_terminus_pool_id=args.admin_terminus_pool_id,
         subject_erc721_address=args.subject_erc721_address,
@@ -431,64 +430,64 @@ def generate_cli():
     )
     facet_cut_parser.set_defaults(func=handle_facet_cut)
 
-    inventory_gogogo_parser = subcommands.add_parser(
-        "inventory-gogogo",
-        description="Deploy Inventory diamond contract",
+    contracts_parser = subcommands.add_parser(
+        "systems",
+        description="Deploy G7 diamond contract",
     )
-    Diamond.add_default_arguments(inventory_gogogo_parser, transact=True)
-    inventory_gogogo_parser.add_argument(
+    Diamond.add_default_arguments(contracts_parser, transact=True)
+    contracts_parser.add_argument(
         "--admin-terminus-address",
         required=True,
         help="Address of Terminus contract defining access control for this GardenOfForkingPaths contract",
     )
-    inventory_gogogo_parser.add_argument(
+    contracts_parser.add_argument(
         "--admin-terminus-pool-id",
         required=True,
         type=int,
         help="Pool ID of Terminus pool for administrators of this GardenOfForkingPaths contract",
     )
-    inventory_gogogo_parser.add_argument(
+    contracts_parser.add_argument(
         "--subject-erc721-address",
         required=True,
         help="Address of ERC721 contract that the Inventory modifies",
     )
-    inventory_gogogo_parser.add_argument(
+    contracts_parser.add_argument(
         "--diamond-cut-address",
         required=False,
         default=None,
         help="Address to deployed DiamondCutFacet. If provided, this command skips deployment of a new DiamondCutFacet.",
     )
-    inventory_gogogo_parser.add_argument(
+    contracts_parser.add_argument(
         "--diamond-address",
         required=False,
         default=None,
         help="Address to deployed Diamond contract. If provided, this command skips deployment of a new Diamond contract and simply mounts the required facets onto the existing Diamond contract. Assumes that there is no collision of selectors.",
     )
-    inventory_gogogo_parser.add_argument(
+    contracts_parser.add_argument(
         "--diamond-loupe-address",
         required=False,
         default=None,
         help="Address to deployed DiamondLoupeFacet. If provided, this command skips deployment of a new DiamondLoupeFacet. It mounts the existing DiamondLoupeFacet onto the Diamond.",
     )
-    inventory_gogogo_parser.add_argument(
+    contracts_parser.add_argument(
         "--ownership-address",
         required=False,
         default=None,
         help="Address to deployed OwnershipFacet. If provided, this command skips deployment of a new OwnershipFacet. It mounts the existing OwnershipFacet onto the Diamond.",
     )
-    inventory_gogogo_parser.add_argument(
+    contracts_parser.add_argument(
         "--inventory-facet-address",
         required=False,
         default=None,
         help="Address to deployed InventoryFacet. If provided, this command skips deployment of a new InventoryFacet. It mounts the existing InventoryFacet onto the Diamond.",
     )
-    inventory_gogogo_parser.add_argument(
+    contracts_parser.add_argument(
         "-o",
         "--outfile",
         type=argparse.FileType("w"),
         default=None,
         help="(Optional) file to write deployed addresses to",
     )
-    inventory_gogogo_parser.set_defaults(func=handle_inventory_gogogo)
+    contracts_parser.set_defaults(func=handle_systems)
 
     return parser

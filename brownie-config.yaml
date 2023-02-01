@@ -1,5 +1,7 @@
+dotenv: .env
+
 dependencies:
-  - "OpenZeppelin/openzeppelin-contracts@4.3.2"
+  - "OpenZeppelin/openzeppelin-contracts@4.4.0"
   - "bugout-dev/dao@0.0.7"
   - "bugout-dev/engine@0.0.3"
 

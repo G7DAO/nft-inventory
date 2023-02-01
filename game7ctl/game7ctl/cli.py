@@ -29,7 +29,7 @@ def generate_cli() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers()
 
     add_subparser(
-        "core",
+        "dao",
         subparsers,
         core_generate_cli,
     )

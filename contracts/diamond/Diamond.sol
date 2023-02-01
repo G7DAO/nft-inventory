@@ -4,10 +4,11 @@ pragma solidity ^0.8.0;
 // Adapted from the Diamond 3 reference implementation by Nick Mudge:
 // https://github.com/mudgen/diamond-3-hardhat
 
-import {LibDiamond} from "./libraries/LibDiamond.sol";
-import {IDiamondCut} from "./interfaces/IDiamondCut.sol";
+import {LibDiamond} from "../libraries/LibDiamond.sol";
+import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
+import {IDiamond} from "../interfaces/IDiamond.sol";
 
-contract Diamond {
+contract Diamond is IDiamond {
     constructor(address _contractOwner, address _diamondCutFacet) payable {
         LibDiamond.setContractOwner(_contractOwner);
 
