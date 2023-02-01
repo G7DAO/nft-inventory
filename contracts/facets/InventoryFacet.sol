@@ -181,9 +181,6 @@ contract InventoryFacet is
                     SlotType: slotType,
                     SlotURI: slotURI,
                     SlotIsUnequippable: false,
-                    // previousSlotNumSubject = 3
-                    // previousSlotNumSubject + i = 3;(first iteration)
-                    // previousSlotNumSubject + 1 = 4;
                     SlotId: previousSlotNumSubject + i  == previousSlotNumSubject ?  previousSlotNumSubject + 1:  previousSlotNumSubject + i
                 })
             );
