@@ -144,7 +144,7 @@ contract InventoryFacet is
         return newSlot;
     }
 
-    function setSlotType(uint256 slotType, string memory slotTypeName) external onlyAdmin {
+    function createSlotType(uint256 slotType, string memory slotTypeName) external onlyAdmin {
         require(
             bytes(slotTypeName).length > 0,
             "InventoryFacet.setSlotType: Slot type name must be non-empty");
@@ -152,6 +152,14 @@ contract InventoryFacet is
         LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
         istore.SlotTypes[slotType] = slotTypeName;
         emit NewSlotTypeAdded(msg.sender, slotType, slotTypeName);
+    }
+
+    function addSlotType(uint256 slot, uint256 slotType) external onlyAdmin {
+        require(slotType > 0, "InventoryFacet.addSlotType: SlotType must be greater than 0");
+
+        LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
+        istore.SlotData[slot].SlotType = slotType;
+        emit SlotTypeAdded(msg.sender, slot, slotType);
     }
 
     function getSlotType(uint256 slotType) external view returns(string memory slotTypeName) {
@@ -205,7 +213,7 @@ contract InventoryFacet is
         return LibInventory.inventoryStorage().NumSlots;
     }
 
-    function getSlotById(uint256 subjectTokenId, uint slotId)
+    function getSlotById(uint slotId)
         external
         view
         returns (LibInventory.Slot memory slot) {
