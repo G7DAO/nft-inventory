@@ -5,7 +5,7 @@
  * GitHub: https://github.com/G7DAO/contracts
  */
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 import {TerminusPermissions} from "@moonstream/contracts/terminus/TerminusPermissions.sol";
 import {DiamondReentrancyGuard} from "@moonstream-engine/contracts/diamond/security/DiamondReentrancyGuard.sol";
@@ -140,14 +140,26 @@ contract InventoryFacet is
             SlotId: newSlot
         });
 
-        emit SlotCreated(msg.sender, newSlot, unequippable);
+        emit SlotCreated(msg.sender, newSlot, unequippable, slotType);
         return newSlot;
     }
 
-    function setSlotType(uint256 slotType, string memory slotTypeName) external onlyAdmin {
+    function createSlotType(uint256 slotType, string memory slotTypeName) external onlyAdmin {
+        require(
+            bytes(slotTypeName).length > 0,
+            "InventoryFacet.setSlotType: Slot type name must be non-empty");
+        require(slotType > 0, "InventoryFacet.setSlotType: Slot type must be greater than 0");
         LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
         istore.SlotTypes[slotType] = slotTypeName;
         emit NewSlotTypeAdded(msg.sender, slotType, slotTypeName);
+    }
+
+    function addSlotType(uint256 slot, uint256 slotType) external onlyAdmin {
+        require(slotType > 0, "InventoryFacet.addSlotType: SlotType must be greater than 0");
+
+        LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
+        istore.SlotData[slot].SlotType = slotType;
+        emit SlotTypeAdded(msg.sender, slot, slotType);
     }
 
     function getSlotType(uint256 slotType) external view returns(string memory slotTypeName) {
@@ -155,7 +167,7 @@ contract InventoryFacet is
         return istore.SlotTypes[slotType];
     }
 
-    function addBackPackToSubject(
+    function addBackpackToSubject(
         uint256 slotQty,
         uint256 toSubjectTokenId,
         uint256 slotType,
@@ -164,7 +176,7 @@ contract InventoryFacet is
 
         require(
             slotQty > 0,
-            "InventoryFacet.addBackPackToSubject: Slot quantity must be greater than 0"
+            "InventoryFacet.addBackpackToSubject: Slot quantity must be greater than 0"
         );
 
         LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
@@ -177,9 +189,6 @@ contract InventoryFacet is
                     SlotType: slotType,
                     SlotURI: slotURI,
                     SlotIsUnequippable: false,
-                    // previousSlotNumSubject = 3
-                    // previousSlotNumSubject + i = 3;(first iteration)
-                    // previousSlotNumSubject + 1 = 4;
                     SlotId: previousSlotNumSubject + i  == previousSlotNumSubject ?  previousSlotNumSubject + 1:  previousSlotNumSubject + i
                 })
             );
@@ -204,10 +213,9 @@ contract InventoryFacet is
         return LibInventory.inventoryStorage().NumSlots;
     }
 
-    function getSlotById(uint256 subjectTokenId, uint slotId)
+    function getSlotById(uint256 slotId)
         external
         view
-        onlyAdmin
         returns (LibInventory.Slot memory slot) {
         
         return LibInventory.inventoryStorage().SlotData[slotId];
@@ -232,6 +240,15 @@ contract InventoryFacet is
 
     function slotIsUnequippable(uint256 slotId) external view returns (bool) {
         return LibInventory.inventoryStorage().SlotData[slotId].SlotIsUnequippable;
+    }
+
+    function setSlotUnequippable(bool unquippable, uint256 slotId) external onlyAdmin () {
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        LibInventory.Slot memory slot = istore.SlotData[slotId];
+        slot.SlotIsUnequippable = unquippable;
+        istore.SlotData[slotId] = slot;
     }
 
     function markItemAsEquippableInSlot(
@@ -499,6 +516,8 @@ contract InventoryFacet is
     {
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
+
+        require(slot <= this.numSlots(), "InventoryFacet.getEquippedItem: Slot does not exist");
 
         LibInventory.EquippedItem memory equippedItem = istore.EquippedItems[
             istore.ContractERC721Address

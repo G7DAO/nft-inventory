@@ -188,11 +188,12 @@ def diamond(
     diamond_address: Optional[str] = None,
     diamond_loupe_address: Optional[str] = None,
     ownership_address: Optional[str] = None,
+    verify_contracts: Optional[bool] = False,
 ) -> Dict[str, Any]:
     """
     Deploy diamond along with all its basic facets and attach those facets to the diamond.
 
-    Returns addresses of all the deployed contracts with the contract names as keys.
+    Return addresses of all the deployed contracts with the contract names as keys.
     """
     result: Dict[str, Any] = {"contracts": {}, "attached": []}
 
@@ -276,6 +277,18 @@ def diamond(
         return result
     result["attached"].append("OwnershipFacet")
 
+    if verify_contracts:
+        try:
+            diamond_cut_facet.verify_contract()
+            diamond.verify_contract()
+            diamond_loupe_facet.verify_contract()
+            ownership_facet.verify_contract()
+
+        except Exception as e:
+            print(e)
+            result["error"] = "Failed to verify Diamond Facets"
+            return result
+    result["verified_diamond_facets"] = True
     return result
 
 
@@ -289,6 +302,7 @@ def systems(
     diamond_loupe_address: Optional[str] = None,
     ownership_address: Optional[str] = None,
     inventory_facet_address: Optional[str] = None,
+    verify_contracts: Optional[bool] = False,
 ) -> Dict[str, Any]:
     """
     Deploys an EIP2535 Diamond contract and an InventoryFacet and mounts the InventoryFacet onto the Diamond contract.
@@ -302,6 +316,7 @@ def systems(
         diamond_address=diamond_address,
         diamond_loupe_address=diamond_loupe_address,
         ownership_address=ownership_address,
+        verify_contracts=verify_contracts,
     )
 
     if inventory_facet_address is None:
@@ -309,6 +324,9 @@ def systems(
         inventory_facet.deploy(transaction_config=transaction_config)
     else:
         inventory_facet = InventoryFacet.InventoryFacet(inventory_facet_address)
+
+    if verify_contracts:
+        inventory_facet.verify_contract()
 
     deployment_info["contracts"]["InventoryFacet"] = inventory_facet.address
 
@@ -366,6 +384,7 @@ def handle_systems(args: argparse.Namespace) -> None:
         diamond_loupe_address=args.diamond_loupe_address,
         ownership_address=args.ownership_address,
         inventory_facet_address=args.inventory_facet_address,
+        verify_contracts=args.verify_contracts,
     )
     if args.outfile is not None:
         with args.outfile:
@@ -407,6 +426,7 @@ def generate_cli():
     facet_cut_parser.add_argument(
         "--initializer-address",
         default=ZERO_ADDRESS,
+        required=True,
         help=f"Address of contract to run as initializer after cut (default: {ZERO_ADDRESS})",
     )
     facet_cut_parser.add_argument(
@@ -439,6 +459,11 @@ def generate_cli():
         description="Deploy G7 diamond contract",
     )
     Diamond.add_default_arguments(contracts_parser, transact=True)
+    contracts_parser.add_argument(
+        "--verify-contracts",
+        action="store_true",
+        help="Verify contracts",
+    )
     contracts_parser.add_argument(
         "--admin-terminus-address",
         required=True,

@@ -6,7 +6,7 @@ from brownie.network import chain
 from moonworm.watch import _fetch_events_chunk
 
 from . import InventoryFacet, MockERC20, MockERC721, MockTerminus, inventory_events
-from .core import systems
+from .dao import systems
 
 MAX_UINT = 2**256 - 1
 
@@ -199,7 +199,7 @@ class TestAdminFlow(InventoryTestCase):
         self.assertEqual(num_slots_1, 1)
 
         # admin adds 10 more slots to the subject token
-        self.inventory.add_back_pack_to_subject(
+        self.inventory.add_backpack_to_subject(
             10,
             subject_token_id,
             0,
@@ -285,7 +285,7 @@ class TestAdminFlow(InventoryTestCase):
         num_slots_0 = self.inventory.num_slots()
 
         # admin adds 10 more slots to the subject token
-        self.inventory.add_back_pack_to_subject(
+        self.inventory.add_backpack_to_subject(
             10,
             subject_token_id,
             0,
@@ -318,7 +318,7 @@ class TestAdminFlow(InventoryTestCase):
         # set the slot uri
         with self.assertRaises(VirtualMachineError):
             # admin adds 10 more slots to the subject token
-            self.inventory.add_back_pack_to_subject(
+            self.inventory.add_backpack_to_subject(
                 10,
                 subject_token_id,
                 0,

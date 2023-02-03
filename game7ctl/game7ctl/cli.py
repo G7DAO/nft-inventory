@@ -1,7 +1,7 @@
 import argparse
 from typing import Callable
 
-from .core import generate_cli as core_generate_cli
+from .dao import generate_cli as core_generate_cli
 from .InventoryFacet import generate_cli as inventory_generate_cli
 from .DiamondLoupeFacet import generate_cli as dloupe_generate_cli
 from .DiamondCutFacet import generate_cli as dcut_generate_cli

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 import "../libraries/LibInventory.sol";
 
@@ -13,7 +13,7 @@ interface IInventory {
 
     event ContractAddressDesignated(address indexed contractAddress);
 
-    event SlotCreated(address indexed creator, uint256 slot, bool unequippable);
+    event SlotCreated(address indexed creator, uint256 indexed slot, bool unequippable, uint256 indexed slotType);
 
     event NewSlotTypeAdded(address indexed creator, uint256 indexed slotType, string slotTypeName);
 
@@ -25,9 +25,11 @@ interface IInventory {
         uint256 maxAmount
     );
 
-    event BackpackAdded(address indexed creator, uint indexed toSubjectTokenId, uint256 indexed slotQuantity);
+    event BackpackAdded(address indexed creator, uint256 indexed toSubjectTokenId, uint256 indexed slotQuantity);
 
-    event NewSlotURI(uint indexed slotId);
+    event NewSlotURI(uint256 indexed slotId);
+
+    event SlotTypeAdded(address indexed creator, uint256 indexed slotId, uint256 indexed slotType);
 
     event ItemEquipped(
         uint256 indexed subjectTokenId,
@@ -102,7 +104,7 @@ interface IInventory {
         view
         returns (LibInventory.EquippedItem memory item);
 
-    function getSlotById(uint256 subjectTokenId, uint slotId)
+    function getSlotById(uint256 slotId)
         external
         view
         returns (LibInventory.Slot memory slots);
@@ -112,7 +114,7 @@ interface IInventory {
         view
         returns(LibInventory.Slot[] memory slot);
     
-    function addBackPackToSubject(
+    function addBackpackToSubject(
         uint256 slotQty,
         uint256 toSubjectTokenId,
         uint256 slotType,
@@ -121,7 +123,11 @@ interface IInventory {
 
     function getSlotURI(uint256 slotId) external view returns (string memory);
 
-    function setSlotType(uint256 slotType, string memory slotTypeName) external;
+    function createSlotType(uint256 slotType, string memory slotTypeName) external;
+
+    function addSlotType(uint256 slot, uint256 slotType) external;
 
     function getSlotType(uint256 slotType) external view returns(string memory slotTypeName);
+
+    function setSlotUnequippable(bool unquippable, uint256 slotId) external;
 }

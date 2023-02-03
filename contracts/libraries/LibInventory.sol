@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 /**
 LibInventory defines the storage structure used by the Inventory contract as a facet for an EIP-2535 Diamond
