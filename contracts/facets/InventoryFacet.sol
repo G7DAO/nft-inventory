@@ -5,7 +5,7 @@
  * GitHub: https://github.com/G7DAO/contracts
  */
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 import {TerminusPermissions} from "@moonstream/contracts/terminus/TerminusPermissions.sol";
 import {DiamondReentrancyGuard} from "@moonstream-engine/contracts/diamond/security/DiamondReentrancyGuard.sol";

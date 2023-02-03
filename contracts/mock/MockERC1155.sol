@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 ///@notice This contract is for mock for WETH token.
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 import "@openzeppelin-contracts/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 
