@@ -1,8 +1,17 @@
 import argparse
+from typing import Callable
 
-from .core import generate_cli as core_generate_cli
+from .dao import generate_cli as core_generate_cli
 from .InventoryFacet import generate_cli as inventory_generate_cli
+from .DiamondLoupeFacet import generate_cli as dloupe_generate_cli
+from .DiamondCutFacet import generate_cli as dcut_generate_cli
+from .OwnershipFacet import generate_cli as own_generate_cli
 from .version import VERSION
+
+
+def add_subparser(cmd_name: str, subparser: argparse.ArgumentParser, cli_gen: Callable):
+    subcommand = cli_gen()
+    subparser.add_parser(cmd_name, parents=[subcommand], add_help=False)
 
 
 def generate_cli() -> argparse.ArgumentParser:
@@ -19,11 +28,15 @@ def generate_cli() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers()
 
-    core_parser = core_generate_cli()
-    subparsers.add_parser("core", parents=[core_parser], add_help=False)
-
-    inventory_parser = inventory_generate_cli()
-    subparsers.add_parser("inventory", parents=[inventory_parser], add_help=False)
+    add_subparser(
+        "dao",
+        subparsers,
+        core_generate_cli,
+    )
+    add_subparser("inventory", subparsers, inventory_generate_cli)
+    add_subparser("diamond-loupe", subparsers, dloupe_generate_cli)
+    add_subparser("diamond-cut", subparsers, dcut_generate_cli)
+    add_subparser("ownership", subparsers, own_generate_cli)
 
     return parser
 

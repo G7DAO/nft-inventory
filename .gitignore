@@ -149,3 +149,4 @@ prod.test.env
 dev.test.env
 
 scratch/
+.idea

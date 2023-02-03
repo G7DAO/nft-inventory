@@ -18,17 +18,17 @@ ADMINISTRATOR_DESIGNATED_ABI = {
     "type": "event",
 }
 
-SUBJECT_DESIGNATED_ABI = {
+CONTRACT_ADDRESS_DESIGNATED_ABI = {
     "anonymous": False,
     "inputs": [
         {
             "indexed": True,
             "internalType": "address",
-            "name": "subjectAddress",
+            "name": "contractAddress",
             "type": "address",
         }
     ],
-    "name": "SubjectDesignated",
+    "name": "ContractAddressDesignated",
     "type": "event",
 }
 
@@ -42,7 +42,7 @@ SLOT_CREATED_ABI = {
             "type": "address",
         },
         {
-            "indexed": False,
+            "indexed": True,
             "internalType": "uint256",
             "name": "slot",
             "type": "uint256",
@@ -52,6 +52,12 @@ SLOT_CREATED_ABI = {
             "internalType": "bool",
             "name": "unequippable",
             "type": "bool",
+        },
+        {
+            "indexed": True,
+            "internalType": "uint256",
+            "name": "slotType",
+            "type": "uint256",
         },
     ],
     "name": "SlotCreated",
