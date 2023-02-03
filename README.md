@@ -184,3 +184,10 @@ Using a command like this:
 game7ctl dao systems --network <NETWORK> --admin-terminus-address <TERMINUS_ADMIN_ADDRESS> --admin-terminus-pool-id <POOL_ID> --sender <BROWNIE_ACCOUNT/KEYSTORE FILE PATH> --subject-erc721-address <ERC_721_CONTRACT_ADDRESS>
 ```
 
+# Local development tools
+
+`black@23.1.0` (for formatting, use this same version to avoid problems with the CI)
+
+How run this?
+
+Use `black <path>` to format the code.
