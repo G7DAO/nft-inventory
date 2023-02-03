@@ -6,7 +6,7 @@ from brownie.network import chain
 from moonworm.watch import _fetch_events_chunk
 
 from . import InventoryFacet, MockERC20, MockERC721, MockTerminus, inventory_events
-from .core import systems
+from .dao import systems
 
 MAX_UINT = 2**256 - 1
 
