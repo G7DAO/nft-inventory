@@ -104,7 +104,7 @@ interface IInventory {
         view
         returns (LibInventory.EquippedItem memory item);
 
-    function getSlotById(uint slotId)
+    function getSlotById(uint256 slotId)
         external
         view
         returns (LibInventory.Slot memory slots);

@@ -213,7 +213,7 @@ contract InventoryFacet is
         return LibInventory.inventoryStorage().NumSlots;
     }
 
-    function getSlotById(uint slotId)
+    function getSlotById(uint256 slotId)
         external
         view
         returns (LibInventory.Slot memory slot) {
