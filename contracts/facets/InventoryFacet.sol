@@ -242,6 +242,15 @@ contract InventoryFacet is
         return LibInventory.inventoryStorage().SlotData[slotId].SlotIsUnequippable;
     }
 
+    function setSlotUnequippable(bool unquippable, uint256 slotId) external onlyAdmin () {
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        LibInventory.Slot memory slot = istore.SlotData[slotId];
+        slot.SlotIsUnequippable = unquippable;
+        istore.SlotData[slotId] = slot;
+    }
+
     function markItemAsEquippableInSlot(
         uint256 slot,
         uint256 itemType,
@@ -508,7 +517,7 @@ contract InventoryFacet is
         LibInventory.InventoryStorage storage istore = LibInventory
             .inventoryStorage();
 
-        require(slot >= this.numSlots(), "InventoryFacet.getEquippedItem: Slot does not exist");
+        require(slot <= this.numSlots(), "InventoryFacet.getEquippedItem: Slot does not exist");
 
         LibInventory.EquippedItem memory equippedItem = istore.EquippedItems[
             istore.ContractERC721Address

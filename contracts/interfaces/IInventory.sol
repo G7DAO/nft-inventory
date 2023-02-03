@@ -125,5 +125,9 @@ interface IInventory {
 
     function createSlotType(uint256 slotType, string memory slotTypeName) external;
 
+    function addSlotType(uint256 slot, uint256 slotType) external;
+
     function getSlotType(uint256 slotType) external view returns(string memory slotTypeName);
+
+    function setSlotUnequippable(bool unquippable, uint256 slotId) external;
 }

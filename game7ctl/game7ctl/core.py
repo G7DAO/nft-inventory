@@ -368,6 +368,7 @@ def handle_facet_cut(args: argparse.Namespace) -> None:
         ignore_selectors=args.ignore_selectors,
         methods=args.methods,
         selectors=args.selectors,
+        initializer_args=args.initializer_args,
     )
 
 
@@ -428,6 +429,9 @@ def generate_cli():
         default=ZERO_ADDRESS,
         required=True,
         help=f"Address of contract to run as initializer after cut (default: {ZERO_ADDRESS})",
+    )
+    facet_cut_parser.add_argument(
+        "--initializer-args", nargs="*", help="Arguments to initializer"
     )
     facet_cut_parser.add_argument(
         "--ignore-methods",
