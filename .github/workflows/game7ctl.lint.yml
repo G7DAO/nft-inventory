@@ -16,11 +16,9 @@ jobs:
           python-version: "3.10"
       - name: Upgrade pip and setuptools
         run: pip install --upgrade pip setuptools
-      - name: Install dependencies (including dev dependencies)
+      - name: Install black
         working-directory: game7ctl/
-        env:
-          BROWNIE_LIB: 1
-        run: pip install -e ".[dev]"
+        run: pip install black
       - name: Black syntax check
         working-directory: game7ctl/
         run: black --check game7ctl
