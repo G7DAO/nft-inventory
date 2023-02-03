@@ -304,7 +304,6 @@ def systems(
     inventory_facet_address: Optional[str] = None,
     verify_contracts: Optional[bool] = False,
 ) -> Dict[str, Any]:
-
     """
     Deploys an EIP2535 Diamond contract and an InventoryFacet and mounts the InventoryFacet onto the Diamond contract.
 
