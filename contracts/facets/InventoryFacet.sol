@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 
 /**
- * Authors: Moonstream DAO (engineering@moonstream.to)
+ * Authors: Omar Garcia<ogarciarevett>, Moonstream DAO (engineering@moonstream.to)
  * GitHub: https://github.com/G7DAO/contracts
  */
 
@@ -154,7 +154,7 @@ contract InventoryFacet is
         emit NewSlotTypeAdded(msg.sender, slotType, slotTypeName);
     }
 
-    function addSlotType(uint256 slot, uint256 slotType) external onlyAdmin {
+    function assignSlotType(uint256 slot, uint256 slotType) external onlyAdmin {
         require(slotType > 0, "InventoryFacet.addSlotType: SlotType must be greater than 0");
 
         LibInventory.InventoryStorage storage istore = LibInventory.inventoryStorage();
@@ -167,6 +167,7 @@ contract InventoryFacet is
         return istore.SlotTypes[slotType];
     }
 
+    //    TODO: @ogarciarevett change this to use a external backpack NFT
     function addBackpackToSubject(
         uint256 slotQty,
         uint256 toSubjectTokenId,
@@ -394,6 +395,7 @@ contract InventoryFacet is
                 itemTokenId == 0,
             "InventoryFacet.equip: itemTokenId can only be non-zero for ERC721 or ERC1155 items"
         );
+
         require(
             itemType == LibInventory.ERC20_ITEM_TYPE ||
                 itemType == LibInventory.ERC1155_ITEM_TYPE ||
@@ -524,5 +526,54 @@ contract InventoryFacet is
         ][subjectTokenId][slot];
 
         return equippedItem;
+    }
+
+    function getAllEquippedItems(uint256 subjectTokenId, uint256[] memory slots)
+        external
+        view
+        returns (LibInventory.EquippedItem[] memory equippedItems)
+    {
+        LibInventory.InventoryStorage storage istore = LibInventory
+            .inventoryStorage();
+
+        LibInventory.EquippedItem[] memory items = new LibInventory.EquippedItem[](slots.length);
+
+        for (uint256 i = 0; i < slots.length; i++) {
+            require(slots[i] <= this.numSlots(), "InventoryFacet.getEquippedItem: Slot does not exist");
+            LibInventory.EquippedItem memory equippedItem = istore.EquippedItems[istore.ContractERC721Address][subjectTokenId][slots[i]];
+            items[i] = equippedItem;
+        }
+
+        return items;
+    }
+
+    function equipBatch(
+        uint256 subjectTokenId,
+        uint256[] memory slots,
+        LibInventory.EquippedItem[] memory items
+    ) external diamondNonReentrant {
+        require(
+            items.length > 0,
+            "InventoryFacet.batchEquip: Must equip at least one item"
+        );
+        require(
+            slots.length == items.length,
+            "InventoryFacet.batchEquip: Must provide a slot for each item"
+        );
+        for (uint256 i = 0; i < items.length; i++) {
+            require(
+                slots[i] <= this.numSlots(),
+                "InventoryFacet.batchEquip: Slot does not exist"
+            );
+            this.equip(
+                subjectTokenId,
+                slots[i],
+                items[i].ItemType,
+                items[i].ItemAddress,
+                items[i].ItemTokenId,
+                items[i].Amount
+            );
+        }
+
     }
 }
