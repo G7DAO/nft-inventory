@@ -125,9 +125,20 @@ interface IInventory {
 
     function createSlotType(uint256 slotType, string memory slotTypeName) external;
 
-    function addSlotType(uint256 slot, uint256 slotType) external;
+    function assignSlotType(uint256 slot, uint256 slotType) external;
 
     function getSlotType(uint256 slotType) external view returns(string memory slotTypeName);
 
     function setSlotUnequippable(bool unquippable, uint256 slotId) external;
+
+    function getAllEquippedItems(uint256 subjectTokenId, uint256[] memory slots)
+        external
+        view
+        returns (LibInventory.EquippedItem[] memory equippedItems);
+
+    function equipBatch(
+        uint256 subjectTokenId,
+        uint256[] memory slots,
+        LibInventory.EquippedItem[] memory items
+    ) external;
 }
