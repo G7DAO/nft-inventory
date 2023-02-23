@@ -394,7 +394,7 @@ def handle_systems(args: argparse.Namespace) -> None:
 
 def generate_cli():
     parser = argparse.ArgumentParser(
-        description="CLI to manage Lootbox contract",
+        description="Deploy and manage proxy contracts",
     )
     parser.set_defaults(func=lambda _: parser.print_help())
     subcommands = parser.add_subparsers()
@@ -455,8 +455,8 @@ def generate_cli():
     facet_cut_parser.set_defaults(func=handle_facet_cut)
 
     contracts_parser = subcommands.add_parser(
-        "systems",
-        description="Deploy G7 diamond contract",
+        "deploy-inventory",
+        description="Deploy the Inventory contract as a Diamond",
     )
     Diamond.add_default_arguments(contracts_parser, transact=True)
     contracts_parser.add_argument(
