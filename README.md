@@ -77,8 +77,8 @@ to deploy the Inventory contract as a Diamond proxy, you would use the `game7ctl
 To see all the parameters you can pass in the deployment, run:
 
 ```
-$ game7ctl dao systems --help
-usage: game7ctl dao [-h] 
+$ game7ctl dao deploy-inventory --help
+usage: game7ctl dao [-h]
     --network NETWORK
     --admin-terminus-address ADMIN_TERMINUS_ADDRESS
     --admin-terminus-pool-id ADMIN_TERMINUS_POOL_ID
