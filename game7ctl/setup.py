@@ -18,7 +18,7 @@ setup(
     packages=find_packages(),
     install_requires=["eth-brownie", "inspector-facet", "tqdm"],
     extras_require={
-        "dev": ["black", "isort", "moonworm"],
+        "dev": ["black", "isort", "moonworm>=0.6.2"],
     },
     description="Development tools for Game7 smart contracts",
     long_description=long_description,

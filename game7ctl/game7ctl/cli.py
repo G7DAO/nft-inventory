@@ -5,7 +5,9 @@ from .dao import generate_cli as core_generate_cli
 from .InventoryFacet import generate_cli as inventory_generate_cli
 from .DiamondLoupeFacet import generate_cli as dloupe_generate_cli
 from .DiamondCutFacet import generate_cli as dcut_generate_cli
+from .MockERC721 import generate_cli as erc721_generate_cli
 from .OwnershipFacet import generate_cli as own_generate_cli
+from .TerminusFacet import generate_cli as terminus_generate_cli
 from .version import VERSION
 
 
@@ -37,6 +39,8 @@ def generate_cli() -> argparse.ArgumentParser:
     add_subparser("diamond-loupe", subparsers, dloupe_generate_cli)
     add_subparser("diamond-cut", subparsers, dcut_generate_cli)
     add_subparser("ownership", subparsers, own_generate_cli)
+    add_subparser("erc721", subparsers, erc721_generate_cli)
+    add_subparser("terminus", subparsers, terminus_generate_cli)
 
     return parser
 
